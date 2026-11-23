@@ -58,12 +58,32 @@ class NativeEventTests(unittest.TestCase):
         with patch("src.events.locate", return_value=dict(status="ok", azimuth_deg=10)):
             first = self.analyze()
             second = self.analyze()
-        self.assertEqual(first["speaker_identity"]["timestamp"], 1002)
+        self.assertEqual(first["diagnostics"]["observed_at"], 1002)
         self.assertEqual(first["utterance_id"], second["utterance_id"])
 
     def test_stt_mismatch_rejected(self):
         with self.assertRaises(ValueError):
             self.analyze(utterance_id="one", stt=dict(utterance_id="two", text="測試"))
+
+    def test_disabled_components_are_not_loaded(self):
+        with patch("src.events.locate") as locate, patch("src.speakers.SpeakerEngine") as model:
+            result = self.analyze(enable_speaker=False, enable_localization=False,
+                                  utterance_id="off", stt=dict(utterance_id="off", text="測試"))
+        locate.assert_not_called()
+        model.assert_not_called()
+        self.assertEqual(result["diagnostics"]["recognition"]["status"], "disabled")
+        self.assertEqual(result["diagnostics"]["direction"]["status"], "disabled")
+        self.assertEqual(result["agent_input"]["user_id"], "")
+        self.assertIsNone(result["speaker_identity"])
+
+    def test_speaker_only_keeps_recognition_when_direction_disabled(self):
+        with patch("src.events.locate") as locate, patch("src.speakers.SpeakerEngine") as model:
+            model.return_value.identify.return_value = dict(status="recognized", user_id="U_A")
+            result = self.analyze(enable_localization=False, utterance_id="speaker",
+                                  stt=dict(utterance_id="speaker", text="測試"))
+        locate.assert_not_called()
+        self.assertEqual(result["agent_input"]["user_id"], "U_A")
+        self.assertIsNone(result["speaker_identity"])
 
     def test_contract_limits(self):
         for text in ("", " " * 3, "x" * 2001):

@@ -12,6 +12,7 @@ from jsonschema.exceptions import ValidationError
 
 from src.common import ROOT, fingerprint, load_tracks, read_json
 from src.localization import locate
+from src.features import combined_identity
 
 REFERENCE_COMMIT = "93d9bc1af753deadd4ab2c5487438e2cc765301c"
 
@@ -40,10 +41,11 @@ def input_event(utterance_id, stt, user_id):
 
 
 def analyze_event(files, config, calibration, start, end, database, threshold, margin,
-                  utterance_id=None, stt=None, observed_at=None):
-    if not np.isfinite([start, end, threshold, margin]).all():
+                  utterance_id=None, stt=None, observed_at=None,
+                  enable_speaker=True, enable_localization=True):
+    if not np.isfinite([start, end]).all() or (enable_speaker and not np.isfinite([threshold, margin]).all()):
         raise ValueError("Interval and speaker thresholds must be finite")
-    if not -1 <= threshold <= 1 or not 0 <= margin <= 2:
+    if enable_speaker and (not -1 <= threshold <= 1 or not 0 <= margin <= 2):
         raise ValueError("Threshold must be -1..1 and margin 0..2")
     rate, tracks = load_tracks(files)
     if start < 0 or end <= start or end > min(map(len, tracks)) / rate:
@@ -56,7 +58,7 @@ def analyze_event(files, config, calibration, start, end, database, threshold, m
         raise ValueError("utterance_id must contain 1..128 characters")
     capture = None
     paths = [Path(path).resolve() for path in files]
-    if len({path.parent for path in paths}) == 1 and [path.name for path in paths] == ["A.wav", "B.wav", "C.wav"]:
+    if len({path.parent for path in paths}) == 1 and [path.name for path in paths] == [f"{label}.wav" for label in "ABCD"[:len(paths)]]:
         summary_path = paths[0].parent / "summary.json"
         if summary_path.exists():
             capture = read_json(summary_path)
@@ -67,29 +69,32 @@ def analyze_event(files, config, calibration, start, end, database, threshold, m
             raise ValueError("observed_at must be nonnegative finite Unix seconds")
     # Validate external STT alignment before expensive model inference.
     input_event(utterance_id, stt, "")
-    try:
-        direction = locate(files, config, calibration, start, end)
-    except (ValueError, OSError, KeyError) as error:
-        direction = dict(status="error", azimuth_deg=None, reason=str(error))
-    try:
-        from src.speakers import SpeakerEngine
-        with tempfile.TemporaryDirectory() as temporary:
-            segment = Path(temporary) / "event.wav"
-            wavfile.write(segment, rate, tracks[0][round(start * rate):round(end * rate)].astype("float32"))
-            recognition = SpeakerEngine().identify(segment, database, threshold, margin)
-    except (ValueError, OSError, KeyError, RuntimeError) as error:
-        recognition = dict(status="error", user_id="", reason=str(error))
+    direction = dict(status="disabled", azimuth_deg=None)
+    if enable_localization:
+        try:
+            direction = locate(files, config, calibration, start, end)
+        except Exception as error:
+            direction = dict(status="error", azimuth_deg=None, reason=str(error))
+    recognition = dict(status="disabled", user_id="")
+    if enable_speaker:
+        try:
+            from src.speakers import SpeakerEngine
+            with tempfile.TemporaryDirectory() as temporary:
+                segment = Path(temporary) / "event.wav"
+                wavfile.write(segment, rate, tracks[0][round(start * rate):round(end * rate)].astype("float32"))
+                recognition = SpeakerEngine().identify(segment, database, threshold, margin)
+        except Exception as error:
+            recognition = dict(status="error", user_id="", reason=str(error))
     identity = None
-    if direction["status"] == "ok" and observed_at is not None:
-        identity = dict(user_id=recognition["user_id"], location="",
-                        azimuth_deg=direction["azimuth_deg"], timestamp=observed_at,
-                        source="voice_detect")
+    if observed_at is not None:
+        identity = combined_identity(recognition, direction, observed_at)
         validate_native(identity, "speaker_identity.schema.json")
     return dict(
         utterance_id=utterance_id, interval_seconds=[start, end],
         speaker_identity=identity,
         agent_input=input_event(utterance_id, stt, recognition["user_id"]),
         diagnostics=dict(
+            microphone_count=len(tracks),
             direction=direction, recognition=recognition, identity_track="A", capture=capture,
             source=dict(track_sha256=hashes, sample_rate_hz=rate), observed_at=observed_at,
             identity_age_seconds=None if observed_at is None else time.time() - observed_at),

@@ -33,14 +33,14 @@ def calibration(files, start, end, distances, output):
 
 
 def fit_clock(tracks, rate, start, end, distances):
-    if len(tracks) != 3 or len(distances) != 3 or not np.isfinite(distances).all() or min(distances) <= 0:
-        raise ValueError("Use three tracks and three finite positive calibration distances")
+    if len(tracks) not in (3, 4) or len(distances) != len(tracks) or not np.isfinite(distances).all() or min(distances) <= 0:
+        raise ValueError("Use three or four tracks with one finite positive calibration distance per track")
     if start < 0 or end <= start or end > min(map(len, tracks)) / rate:
         raise ValueError("Calibration interval is outside the recordings")
-    if end - start < 4 or len(distances) != 3 or min(distances) <= 0:
-        raise ValueError("Use at least 4 seconds and three measured positive source distances")
+    if end - start < 4:
+        raise ValueError("Use at least 4 seconds of calibration audio")
     rows = []
-    for channel in (1, 2):
+    for channel in range(1, len(tracks)):
         times, delays = [], []
         for time in np.arange(start, end - .5, .5):
             begin, stop = int(time * rate), int((time + .5) * rate)
@@ -73,6 +73,7 @@ def fit_clock(tracks, rate, start, end, distances):
 
 
 def direction(audio, rate, positions):
+    positions = validate_positions(positions, len(audio))
     angles = np.arange(-180, 180)
     # Project A convention: forward=0, left positive, right negative.
     vectors = np.column_stack((-np.sin(np.deg2rad(angles)), np.cos(np.deg2rad(angles))))
@@ -83,7 +84,7 @@ def direction(audio, rate, positions):
         segments = [track[begin:begin + frame_size] for track in audio]
         if min(np.sqrt(np.mean(x*x)) for x in segments) < 1e-5:
             continue
-        for i, j in combinations(range(3), 2):
+        for i, j in combinations(range(len(audio)), 2):
             baseline = positions[i] - positions[j]
             limit = np.linalg.norm(baseline) / 343
             lags, values = correlation(segments[i], segments[j], rate, limit)
@@ -103,17 +104,27 @@ def direction(audio, rate, positions):
                 best_candidate_azimuth_deg=angle, peak_margin=margin, windows=windows)
 
 
+def validate_positions(positions, count):
+    positions = np.asarray(positions, dtype=float)
+    if count not in (3, 4) or positions.ndim != 2 or positions.shape[1] != 2 or len(positions) < count:
+        raise ValueError("Provide one [x, y] coordinate per active microphone")
+    positions = positions[:count]
+    if not np.isfinite(positions).all() or len(np.unique(positions, axis=0)) != count:
+        raise ValueError("Microphone coordinates must be finite and distinct")
+    if np.linalg.matrix_rank(positions[1:] - positions[0]) < 2:
+        raise ValueError("Use non-collinear microphone positions")
+    return positions
+
+
 def locate(files, config_path, calibration_path, start, end):
+    rate, tracks = load_tracks(files)
     config = read_json(config_path)
     if config.get("geometry_measured") is not True:
         raise ValueError("Measure microphone coordinates and set geometry_measured=true first")
-    positions = np.asarray(config["positions_m"], dtype=float)
-    if positions.shape != (3, 2) or not np.isfinite(positions).all():
-        raise ValueError("positions_m must contain three finite [x, y] coordinates")
-    if np.linalg.matrix_rank(positions[1:] - positions[0]) < 2:
-        raise ValueError("Use three non-collinear microphone positions")
-    rate, tracks = load_tracks(files)
+    positions = validate_positions(config["positions_m"], len(tracks))
     clock = read_json(calibration_path)
+    if len(clock["channels"]) != len(tracks) or clock["sample_rate"] != rate:
+        raise ValueError("Calibration microphone count or sample rate mismatch")
     if clock["fingerprints"] != [fingerprint(p) for p in files]:
         raise ValueError("Calibration belongs to another recording. Calibrate this continuous recording first.")
     if start < 0 or end <= start:

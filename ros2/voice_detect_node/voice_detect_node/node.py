@@ -6,6 +6,8 @@ import threading
 import time
 
 TOPIC = "/project_a/speaker/identity"
+RECOGNITION_TOPIC = "/project_a/speaker/recognition"
+DIRECTION_TOPIC = "/project_a/speaker/direction"
 
 
 class IdentityMailbox:
@@ -35,6 +37,53 @@ class IdentityMailbox:
                 return None
             return dict(self.latest)
 
+    def clear(self):
+        with self.lock:
+            self.latest = None
+
+
+class FeatureMailbox:
+    def __init__(self):
+        self.latest = None
+        self.lock = threading.Lock()
+
+    def update(self, data):
+        timestamp = data.get("timestamp")
+        if isinstance(timestamp, bool) or not isinstance(timestamp, (int, float)) or not math.isfinite(timestamp) or timestamp < 0:
+            raise ValueError("Invalid feature timestamp")
+        if data.get("source") != "voice_detect":
+            raise ValueError("Invalid feature source")
+        recognition = dict(data["recognition"])
+        direction = dict(data["direction"])
+        if recognition.get("status") not in ("recognized", "unknown", "unusable_audio", "disabled", "error"):
+            raise ValueError("Invalid recognition status")
+        if direction.get("status") not in ("ok", "ambiguous", "no_signal", "disabled", "error"):
+            raise ValueError("Invalid direction status")
+        user_id = recognition.get("user_id")
+        if not isinstance(user_id, str) or len(user_id) > 64:
+            raise ValueError("Invalid recognition user_id")
+        if recognition["status"] != "recognized":
+            recognition["user_id"] = ""
+        angle = direction.get("azimuth_deg")
+        if direction["status"] == "ok":
+            if isinstance(angle, bool) or not isinstance(angle, (int, float)) or not math.isfinite(angle) or not -180 <= angle <= 180:
+                raise ValueError("Invalid direction angle")
+        else:
+            direction["azimuth_deg"] = None
+        value = dict(timestamp=timestamp, source="voice_detect",
+                     recognition=recognition, direction=direction)
+        with self.lock:
+            if self.latest is None or timestamp >= self.latest["timestamp"]:
+                self.latest = value
+                return True
+        return False
+
+    def snapshot(self, now):
+        with self.lock:
+            if self.latest is None or not 0 <= now - self.latest["timestamp"] <= 3:
+                return None
+            return json.loads(json.dumps(self.latest))
+
 
 def main(args=None):
     import rclpy
@@ -46,6 +95,7 @@ def main(args=None):
         def __init__(self):
             super().__init__("speaker_identity")
             self.mailbox = IdentityMailbox()
+            self.features = FeatureMailbox()
             self.failure = None
             self.process = None
             command = self.declare_parameter("worker_command", [""]).value
@@ -56,6 +106,8 @@ def main(args=None):
             qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE,
                              durability=DurabilityPolicy.VOLATILE)
             self.publisher = self.create_publisher(String, TOPIC, qos)
+            self.recognition_publisher = self.create_publisher(String, RECOGNITION_TOPIC, qos)
+            self.direction_publisher = self.create_publisher(String, DIRECTION_TOPIC, qos)
             try:
                 self.process = subprocess.Popen(list(command), stdout=subprocess.PIPE,
                                                 text=True, encoding="utf8", errors="strict", bufsize=1)
@@ -72,6 +124,11 @@ def main(args=None):
                     event = json.loads(line)
                     if event.get("kind") == "identity":
                         self.mailbox.update(event["data"])
+                    elif event.get("kind") == "features":
+                        data = event["data"]
+                        if self.features.update(data):
+                            if data["direction"]["status"] != "ok" or data["recognition"]["status"] not in ("recognized", "unknown", "disabled"):
+                                self.mailbox.clear()
                     elif event.get("kind") == "error":
                         raise RuntimeError(event.get("error", "Worker failed"))
                     elif event.get("kind") == "status":
@@ -88,6 +145,11 @@ def main(args=None):
             data = self.mailbox.snapshot(time.time())
             if data is not None:
                 self.publisher.publish(String(data=json.dumps(data, ensure_ascii=False, allow_nan=False)))
+            features = self.features.snapshot(time.time())
+            if features is not None:
+                for key, publisher in (("recognition", self.recognition_publisher), ("direction", self.direction_publisher)):
+                    value = dict(features[key], timestamp=features["timestamp"], source=features["source"])
+                    publisher.publish(String(data=json.dumps(value, ensure_ascii=False, allow_nan=False)))
 
         def close(self):
             if self.process is not None:

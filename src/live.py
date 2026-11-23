@@ -11,8 +11,8 @@ from scipy.io import wavfile
 import tempfile
 
 from src.common import ROOT, read_json
-from src.localization import direction, fit_clock
-from src.speakers import SpeakerEngine
+from src.localization import fit_clock, validate_positions
+from src.features import switches, evaluate, combined_identity
 
 
 class AudioRing:
@@ -50,8 +50,8 @@ class AudioRing:
 
 class LiveCapture:
     def __init__(self, devices, rate, buffer_seconds):
-        if len(devices) != 3 or len(set(devices)) != 3 or any(isinstance(device, bool) or not isinstance(device, int) or device < 0 for device in devices):
-            raise ValueError("Select three distinct WASAPI input devices in physical A/B/C order")
+        if len(devices) not in (1, 3, 4) or len(set(devices)) != len(devices) or any(isinstance(device, bool) or not isinstance(device, int) or device < 0 for device in devices):
+            raise ValueError("Select distinct WASAPI devices in physical A/B/C/D order")
         self.devices = devices
         self.rate = rate
         self.rings = [AudioRing(round(rate * buffer_seconds)) for _ in devices]
@@ -90,6 +90,8 @@ class LiveCapture:
 
 
 def aligned_window(snapshots, clock, rate, seconds):
+    if len(snapshots) != len(clock["channels"]):
+        raise ValueError("Clock channel count differs from the active microphones")
     # Reserve enough samples for either sign of device offset, then interpolate
     # each device onto A's sample-time axis.
     common_end = min((start + len(audio)) / rate for start, audio in snapshots)
@@ -115,6 +117,7 @@ class Recognizer:
         self.database = database
         self.threshold = threshold
         self.margin = margin
+        from src.speakers import SpeakerEngine
         self.engine = SpeakerEngine()
         if not self.engine.database(database)["speakers"]:
             raise ValueError("Enroll Project A user IDs before starting the live node")
@@ -127,73 +130,131 @@ class Recognizer:
             return self.engine.identify(file, self.database, self.threshold, self.margin)
 
 
-def observation(audio, rate, positions, recognizer, timestamp, now):
+def observation(audio, rate, positions, recognizer, timestamp, now,
+                enable_speaker=True, enable_localization=True,
+                speaker_error=None, localization_error=None):
     if not 0 <= now - timestamp <= 3:
         return None, dict(status="stale")
-    speaker = recognizer.identify(audio[0], rate)
-    # During silence, do not renew the previous speaker with a new timestamp.
-    if speaker["status"] == "unusable_audio":
-        return None, dict(status="insufficient_speech", recognition=speaker)
-    location = direction(audio, rate, positions)
-    if location["status"] != "ok":
-        return None, dict(status=location["status"], direction=location, recognition=speaker)
-    payload = dict(user_id=speaker["user_id"], location="", azimuth_deg=location["azimuth_deg"],
-                   timestamp=timestamp, source="voice_detect")
-    # Inference may have used up the receiving system's freshness interval.
+    speaker, location = evaluate(audio, rate, positions, recognizer,
+                                 enable_speaker, enable_localization,
+                                 speaker_error, localization_error)
     if not 0 <= time.time() - timestamp <= 3:
         return None, dict(status="stale_after_inference")
-    return payload, dict(status="observed", direction=location, recognition=speaker)
+    payload = combined_identity(speaker, location, timestamp)
+    status = "partial"
+    if payload is not None:
+        status = "observed"
+    elif speaker["status"] == "error" or location["status"] == "error":
+        status = "degraded"
+    elif speaker["status"] == "unusable_audio":
+        status = "insufficient_speech"
+    return payload, dict(status=status, direction=location, recognition=speaker)
+
+
+def raw_window(snapshots, rate, seconds):
+    start, audio = snapshots[0]
+    size = round(seconds * rate)
+    if len(audio) < size:
+        return None
+    return (start + len(audio)) / rate, [audio[-size:]]
 
 
 def run_live(config_path, emit, stop=None):
     config = read_json(config_path)
-    geometry = read_json(ROOT / config["array_config"])
-    positions = np.asarray(geometry["positions_m"], dtype=float)
-    if geometry.get("geometry_measured") is not True or positions.shape != (3, 2):
-        raise ValueError("Measure array coordinates and set geometry_measured=true")
-    if not np.isfinite(positions).all() or np.linalg.matrix_rank(positions[1:] - positions[0]) < 2:
-        raise ValueError("Microphones must form a measured non-collinear triangle")
+    enable_speaker, enable_localization = switches(config)
+    count = config.get("microphone_count", 3)
+    if isinstance(count, bool) or not isinstance(count, int) or count not in (3, 4):
+        raise ValueError("microphone_count must be 3 or 4")
+    interval = float(config.get("update_seconds", .5))
+    if not np.isfinite(interval) or interval < .1:
+        raise ValueError("update_seconds must be finite and at least 0.1")
+    positions, recognizer = None, None
+    speaker_error, localization_error = None, None
+    if enable_localization:
+        try:
+            geometry = read_json(ROOT / config["array_config"])
+            if geometry.get("geometry_measured") is not True:
+                raise ValueError("Measure array coordinates and set geometry_measured=true")
+            positions = validate_positions(geometry["positions_m"], count)
+        except Exception as error:
+            localization_error = str(error)
+    if enable_speaker:
+        try:
+            recognizer = Recognizer(ROOT / config["database"], config.get("threshold", .65),
+                                    config.get("margin", .08))
+        except Exception as error:
+            speaker_error = str(error)
+    idle_features = dict(
+        recognition=dict(status="error" if enable_speaker else "disabled", user_id="",
+                         reason=speaker_error),
+        direction=dict(status="error" if enable_localization else "disabled", azimuth_deg=None,
+                       reason=localization_error))
+    if positions is None and recognizer is None:
+        emit(dict(kind="status", phase="degraded" if enable_speaker or enable_localization else "disabled"))
+        while not (stop and stop()):
+            emit(dict(kind="features", data=dict(timestamp=time.time(), source="voice_detect", **idle_features)))
+            time.sleep(interval)
+        return
     rate = int(config.get("sample_rate_hz", 48000))
     window = float(config.get("window_seconds", 2.5))
-    duration = float(config.get("calibration_seconds", 8))
-    interval = float(config.get("update_seconds", .5))
-    max_age = float(config.get("max_clock_age_seconds", 0))
-    if not np.isfinite([rate, window, duration, interval, max_age]).all() or rate < 16000 or not 2.1 <= window <= 10 or not 4 <= duration <= 30 or interval < .1 or max_age < 0:
-        raise ValueError("Invalid sample rate, analysis window or calibration timing")
-    recognizer = Recognizer(ROOT / config["database"], config.get("threshold", .65), config.get("margin", .08))
-    emit(dict(kind="status", phase="calibrating",
-              message="Keep the calibration broadband source stationary until phase=ready"))
-    with LiveCapture(config["devices"], rate, max(duration + 2, window + 3)) as capture:
-        deadline = time.monotonic() + duration + 10
-        while True:
-            if stop and stop():
-                return
-            snapshots = capture.snapshots()
-            if min(start + len(audio) for start, audio in snapshots) >= round(duration * rate):
-                break
-            if time.monotonic() > deadline:
-                raise RuntimeError("Calibration audio did not arrive before timeout")
-            time.sleep(.05)
-        if any(start != 0 for start, _ in snapshots):
-            raise RuntimeError("Calibration audio buffer expired")
-        clock = fit_clock([audio for _, audio in snapshots], rate, .5, duration - .2,
-                          config["calibration_distances_m"])
-        emit(dict(kind="status", phase="ready", clock=clock))
-        last_phase = "ready"
+    duration = float(config.get("calibration_seconds", 8)) if positions is not None else 0
+    max_age = float(config.get("max_clock_age_seconds", 0)) if positions is not None else 0
+    if not np.isfinite([rate, window, duration, max_age]).all() or rate < 16000 or not 2.1 <= window <= 10 or max_age < 0:
+        raise ValueError("Invalid sample rate, analysis window or clock age")
+    if positions is not None and not 5 <= duration <= 30:
+        raise ValueError("calibration_seconds must be between 5 and 30")
+    required = count if positions is not None else 1
+    devices = config.get("devices", [])
+    if len(devices) < required:
+        raise ValueError(f"Configure at least {required} devices in A/B/C/D order")
+    clock = None
+    with LiveCapture(devices[:required], rate, max(duration + 2, window + 3)) as capture:
+        if positions is not None:
+            emit(dict(kind="status", phase="calibrating",
+                      message="Keep the broadband calibration source stationary until phase=ready"))
+            deadline = time.monotonic() + duration + 10
+            while True:
+                if stop and stop():
+                    return
+                snapshots = capture.snapshots()
+                if min(start + len(audio) for start, audio in snapshots) >= round(duration * rate):
+                    break
+                if time.monotonic() > deadline:
+                    raise RuntimeError("Calibration audio did not arrive before timeout")
+                time.sleep(.05)
+            try:
+                if any(start != 0 for start, _ in snapshots):
+                    raise ValueError("Calibration audio buffer expired")
+                distances = config["calibration_distances_m"][:count]
+                clock = fit_clock([audio for _, audio in snapshots], rate, .5, duration - .2, distances)
+            except Exception as error:
+                localization_error = str(error)
+        emit(dict(kind="status", phase="ready" if clock is not None or recognizer is not None else "degraded",
+                  clock=clock, speaker_error=speaker_error, localization_error=localization_error))
+        last_phase = None
         while not (stop and stop()):
             tick = time.monotonic()
             snapshots = capture.snapshots()
-            result = aligned_window(snapshots, clock, rate, window)
+            window_localization_error = localization_error
+            result = aligned_window(snapshots, clock, rate, window) if clock else raw_window(snapshots, rate, window)
+            if result is None and clock is not None:
+                result = raw_window(snapshots, rate, window)
+                window_localization_error = localization_error or "Aligned localization window is unavailable"
             if result is not None:
                 end, audio = result
-                if max_age and end > duration + max_age:
-                    raise RuntimeError("Clock calibration validity expired. Restart with a stationary calibration source.")
-                payload, diagnostics = observation(audio, rate, positions, recognizer,
-                                                    capture.started_at + end, time.time())
+                if max_age and clock is not None and end > duration + max_age:
+                    window_localization_error = "Clock calibration validity expired; restart to recalibrate"
+                timestamp = capture.started_at + end
+                payload, diagnostics = observation(
+                    audio, rate, positions, recognizer, timestamp, time.time(),
+                    enable_speaker, enable_localization, speaker_error, window_localization_error)
                 if payload is not None:
                     emit(dict(kind="identity", data=payload))
+                if not diagnostics["status"].startswith("stale"):
+                    emit(dict(kind="features", data=dict(
+                        timestamp=timestamp, source="voice_detect",
+                        recognition=diagnostics["recognition"], direction=diagnostics["direction"])))
                 if diagnostics["status"] != last_phase:
-                    emit(dict(kind="status", phase=diagnostics["status"],
-                              clock_age_seconds=end - duration))
+                    emit(dict(kind="status", phase=diagnostics["status"]))
                     last_phase = diagnostics["status"]
             time.sleep(max(0, interval - (time.monotonic() - tick)))

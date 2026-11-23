@@ -1,4 +1,4 @@
-# 三支 USB 麥克風定位與聲紋辨識
+# 三／四支 USB 麥克風定位與聲紋辨識
 
 目前提供 Windows 10/11、Python 3.11 x64、CPU 執行的持續辨識程式，以及 ROS 2 speaker_identity 節點。可由持續節點辨識身分與方位，也可先錄三軌 WAV，再分析指定時間段。分析結果以 JSON 提供，方便接進機器人程式。STT 可由外部系統處理。
 
@@ -60,10 +60,10 @@ voice_detect/
     localization.py          時鐘校準及 Project A 左正右負方位
     speakers.py              以 Project A user_id 註冊及辨識
     events.py                直接產生 Project A 原生事件與診斷
-    live.py                  持續三軌收音、啟動校準與即時辨識
+    live.py                  三／四軌收音、獨立功能開關與啟動校準
     common.py                音訊讀寫、雜湊及 JSON 儲存
   config/array.json          三個收音孔實際座標
-  config/live.json           即時辨識裝置、模型及時間參數
+  config/live.json           麥克風數量、功能開關及即時辨識參數
   ros2/voice_detect_node/    speaker_identity ROS 2 套件
   assets/test_audio/         固定噪音與掃頻測試 WAV
   models/                    WeSpeaker 模型及來源、版本、雜湊
@@ -76,13 +76,55 @@ voice_detect/
 
 原有 mic_check.py 和 audio_controls.py 保留為相容入口。所有預設儲存路徑以專案所在位置計算。
 
+
+## 麥克風數量與功能開關
+
+在 config/live.json 調整下列三個參數，重新啟動節點後生效。
+
+    {
+      "microphone_count": 3,
+      "enable_speaker_recognition": true,
+      "enable_localization": true
+    }
+
+microphone_count 接受 3 或 4。devices、positions_m、calibration_distances_m 可先填齊四支，程式依數量使用前 N 支。四支的實際裝置編號、收音孔座標和校準聲程都填好後，只改 microphone_count 就能切換。附帶的第四個座標是範例，geometry_measured 需在實際量測完成後設成 true。
+
+| 聲紋 | 定位 | 運行方式 |
+| --- | --- | --- |
+| true | true | 三支或四支同錄並校準，各自計算身分和方向。 |
+| true | false | A 麥克風收音並辨識身分，跳過幾何檔案及時間校準。 |
+| false | true | 三支或四支同錄並校準，計算方向，跳過聲紋模型與註冊資料。 |
+| false | false | 節點保持待命，回報 disabled 狀態，收音與模型均保持關閉。 |
+
+定位初始化或校準失敗時，聲紋仍可工作；聲紋模型或資料庫初始化失敗時，定位仍可工作。推論過程中的錯誤也各自記錄，下一個音窗繼續嘗試；修正初始化設定後重啟節點可重新初始化。
+
+### 各功能的獨立 Topic
+
+以下三個 Topic 使用 std_msgs/msg/String，reliable／volatile／depth 10。
+
+| Topic | 內容與可用時機 |
+| --- | --- |
+| /project_a/speaker/recognition | 聲紋的 status、user_id、分數或錯誤原因，附 timestamp、source。單獨啟用聲紋也持續輸出。 |
+| /project_a/speaker/direction | 定位的 status、azimuth_deg、品質或錯誤原因，附 timestamp、source。定位 disabled／error 時角度為 null。 |
+| /project_a/speaker/identity | 保留現有五欄位合併契約。角度有效且聲紋 recognized／unknown 時輸出；單獨定位時 user_id 為空。 |
+
+聲紋關閉時 user_id 為空，狀態是 disabled；偵測到未知講者時狀態是 unknown。關閉或無法估算定位時，direction Topic 的 azimuth_deg 為 null。各接收端先檢查 status 與 timestamp，再使用數值。
+
+只啟用聲紋時，原有 identity Topic 等待可用角度，身分由 recognition Topic 提供。既有 Chat 若要在此模式使用身分，需要接收 recognition Topic；目前的 Chat 只訂閱 identity。兩項均關閉時，獨立 Topic 會回報 disabled，原合併觀測依三秒有效期自然失效。
+
+離線 analyze 也可以獨立切換。以下只做聲紋，可省略校準檔案。
+
+    .\voice.cmd analyze --files A.wav B.wav C.wav --start 0 --end 3 --no-localization --output analysis.json
+
+只做定位可加 --no-speaker-recognition，兩項都關閉可同時加兩個選項。calibrate、locate、analyze 的 --files 依實際提供的三個或四個 WAV 決定數量；calibrate 的 --distances 需一檔對應一個值。record 的 A/B/C/D 順序由 --devices 決定。
+
 ## 搬到另一台電腦
 
 1. 在新電腦安裝 Python 3.11 x64，包含 Python Launcher。
 2. 複製整個專案。程式、config、models 和已註冊的 data 可以一起帶走。runs 可視需要複製。虛擬環境 .venv 和 .venv-audio 由新電腦重新建立。
 3. 在專案資料夾執行 `setup.cmd`。安裝套件需要網路，模型檔已存在且雜湊正確時直接沿用。
 4. 插好三支麥克風，執行 `voice.cmd devices`，找 Windows WASAPI 的三個 USBAudio2.0 輸入編號。每台電腦及重新插拔後都要重新確認。
-5. 執行 `voice.cmd configure`。程式備份原設定，將三支 AGC 關閉，增益統一到第一支現有值，關閉 Windows 系統音效，並讀回驗證。若權限或驅動不支援，會回報錯誤，結果留在 runs。
+5. 執行 `voice.cmd configure`。程式備份原設定，將偵測到的三支或四支 AGC 關閉，增益統一到第一支現有值，關閉 Windows 系統音效，並讀回驗證。若權限或驅動不支援，會回報錯誤，結果留在 runs。
 6. 用手機在固定位置播放測試 WAV，先驗證三支獨佔同錄完整收到持續聲音，再進行定位或聲紋測試。新電腦的音效元件與處理可能不同，當次結果存入 runs。
 
 重新插拔後曾出現裝置名稱由「3- USBAudio2.0」變成「4- USBAudio2.0」的情況，裝置編號與 A/B/C 對應也可能變更。為三支本體與接線貼標籤，重新確認實體對應後再使用座標與聲紋參考軌。跨電腦或重新開始錄音時，需用當次三軌建立時間校準。
@@ -99,7 +141,7 @@ voice_detect/
 .\voice.cmd record --devices 28 29 33 --seconds 30
 ```
 
-每輪建立獨立 runs 子資料夾，存 A.wav、B.wav、C.wav、summary.json。錄音支援 5–60 秒。此階段可錄環境音，先確認非零樣本、沒有溢位和中斷。三軌是各自開啟的 USB 串流，開始時間會有偏移。
+每輪建立獨立 runs 子資料夾，依實際數量存 A.wav、B.wav、C.wav、D.wav 及 summary.json。record 支援一至四個輸入、5–60 秒。此階段可錄環境音，先確認非零樣本、沒有溢位和中斷。三軌是各自開啟的 USB 串流，開始時間會有偏移。
 
 voice.cmd record 預設使用 WASAPI 獨佔模式，請選擇 devices 清單中的 Windows WASAPI 輸入。本機實測共享模式會逐漸壓低持續沙沙聲，獨佔模式能持續收錄，因此正式測試採用獨佔模式。其他程式占用裝置時可能無法開啟獨佔錄音，請關閉占用程式後重試。--shared 可供對照測試。summary.json 的 exclusive_mode 記錄當次模式。相容入口 mic_check.py 仍可用 --exclusive 明確選擇獨佔模式。
 
@@ -116,7 +158,7 @@ voice.cmd record 預設使用 WASAPI 獨佔模式，請選擇 devices 清單中�
 
 量三個收音孔的水平座標，填進 config/array.json 的 positions_m，再把 geometry_measured 改為 true。單位為公尺，x 朝右，y 朝前。azimuth_deg 採 Project A 規格，正前方 0°、左側 +90°、右側 -90°，範圍 [-180,180]。檔案中的三角形座標是起始範例，請以實際安裝位置替換。
 
-第一版採用單聲源、同高度、遠場水平角度模型。聲源距離應大於陣列尺寸數倍。三孔需形成三角形。延長線到位前，可以做收音及軟體測試。
+第一版採用單聲源、同高度、遠場水平角度模型。聲源距離應大於陣列尺寸數倍。三支或四支收音孔需採非共線配置。延長線到位前，可以做收音及軟體測試。
 
 每次重新開始 USB 錄音都要重新校準。在同一段連續錄音中，先將單一寬頻聲源固定，記錄它到三孔的實際距離，持續播放數秒以上供校準，再於同一錄音的後段測方位。三支到校準聲源等距時，可將三個距離填相同值。校準時保持聲源不動，優先使用寬頻噪音或掃頻，單頻嗶聲可能有多個相似延遲峰值。
 
@@ -192,14 +234,16 @@ location 目前固定為空字串，保留未提供的位置標籤。方位是�
 
 已核對 GitHub feature/live-dialogue-monitor 最新 commit 93d9bc1af753deadd4ab2c5487438e2cc765301c。此節點負責取代 mock_speaker 的資料來源，發布到同一個 /project_a/speaker/identity Topic。
 
-節點啟動 Windows 收音／辨識 worker，三支 USB 以 WASAPI 獨佔串流持續收音。啟動時用固定寬頻聲源估初始偏移與漂移；之後每 0.5 秒分析最近 2.5 秒的校正音訊。A 軌辨識 user_id，三軌估 azimuth_deg，原生五欄位觀測由 ROS 節點直接發布成 String.data JSON。
+節點啟動 Windows 收音／辨識 worker，啟用定位時，依設定數量以三支或四支 USB 的 WASAPI 獨佔串流持續收音。啟動時用固定寬頻聲源估初始偏移與漂移；之後每 0.5 秒分析最近 2.5 秒的校正音訊。A 軌辨識 user_id，所有啟用的定位麥克風一起估 azimuth_deg，原生五欄位觀測由 ROS 節點直接發布成 String.data JSON。
 
-ROS 端管理 worker 啟停與觀測時效。兩個程序是同一套節點的組成部分，觀測資料沿用相同五欄位。QoS 為 reliable／volatile／depth 10。timestamp 保留實際音訊時間，節點每 0.5 秒發布仍在三秒有效期內的最新觀測。安靜、語音不足、方向不明或推論過慢時，等待新的有效音訊，原觀測自然過期。串流溢位、麥克風斷線或校準失敗時，程序結束並回報原因，重新啟動會重新校準。
+ROS 端管理 worker 啟停與觀測時效。兩個程序是同一套節點的組成部分，觀測資料沿用相同五欄位。QoS 為 reliable／volatile／depth 10。timestamp 保留實際音訊時間，節點每 0.5 秒發布仍在三秒有效期內的最新觀測。安靜、語音不足、方向不明或推論過慢時，等待新的有效音訊，原觀測自然過期。各功能的初始化與推論錯誤會保存在獨立狀態，其他可用功能繼續處理。共享收音的串流溢位或設備斷線會結束 worker 並回報原因，重新啟動會重新校準。
 
 ### 設定
 
-1. 量三支座標填 config/array.json，設 geometry_measured=true。
-2. 執行 voice.cmd devices，依實體 A/B/C 順序，把三個 WASAPI 編號填進 config/live.json 的 devices。
+依啟用功能準備設定。定位使用實際幾何及校準聲程，聲紋使用註冊資料。各功能關閉時，對應的檔案與初始化會一起跳過。
+
+1. 量實際使用的三支或四支座標填 config/array.json，設 geometry_measured=true。
+2. 執行 voice.cmd devices，依實體 A/B/C/D 順序，把 WASAPI 編號填進 config/live.json 的 devices。
 3. 以 voice.cmd enroll --user-id U_A --files ... 註冊實際工作台 user_id，每位至少兩段不同錄音。
 4. 填 calibration_distances_m，代表固定校準聲源到各收音孔的公尺距離。
 5. 執行 voice.cmd configure。啟動校準時維持寬頻聲源固定，持續播放至 phase=ready，再停止校準聲。
@@ -232,9 +276,9 @@ ROS_DOMAIN_ID 沿用 Project A 其他節點。啟動腳本自動取得本專案�
 
 ### 本輪軟體驗證
 
-voice.cmd test 現有二十項測試，包含有界音訊緩衝、絕對樣本位置、時鐘校正的滾動音窗、合成方位進入 ROS 觀測暫存、未知／安靜／過期處理，以及既有模型與 CLI 測試。實際 DDS 傳輸、Windows／WSL 程序與設備環境仍需部署時核對。本輪依使用者指示，以程式和假資料驗證。
+voice.cmd test 現有三十五項測試，包含有界音訊緩衝、絕對樣本位置、時鐘校正的滾動音窗、合成方位進入 ROS 觀測暫存、未知／安靜／過期處理，以及既有模型與 CLI 測試。實際 DDS 傳輸、Windows／WSL 程序與設備環境仍需部署時核對。本輪依使用者指示，以程式和假資料驗證。
 
-目前 config/live.json 的 devices、實際幾何與真人註冊資料需在部署時填寫。這些是啟動所需的設備設定。
+目前 config/live.json 的 devices、實際幾何與真人註冊資料需依啟用的功能在部署時填寫。這些是啟動所需的設備設定。
 
 ## 無人聲測試
 
@@ -246,7 +290,7 @@ voice.cmd test 現有二十項測試，包含有界音訊緩衝、絕對樣本�
 
 涵蓋八個已知方位、安靜時無方向、已知時鐘偏移與漂移的三軌 WAV 校準、錯用校準檔的拒絕、語音不足的拒絕、已知／未知／分數接近的聲紋比對，以及實際 ONNX 模型的合成特徵推論。這些結果驗證程式流程，現場角度誤差與真人辨識正確率待實測。
 
-目前二十項自動測試均通過；已將程式入口、src 與 config 複製到另一個含空白的路徑，使用既有 Python 環境驗證啟動與裝置列舉。另一台實體電腦的全新安裝仍待驗證。
+目前三十五項自動測試均通過；已將程式入口、src 與 config 複製到另一個含空白的路徑，使用既有 Python 環境驗證啟動與裝置列舉。另一台實體電腦的全新安裝仍待驗證。
 
 ## 待測清單
 

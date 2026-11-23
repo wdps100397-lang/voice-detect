@@ -24,21 +24,23 @@ def main():
                        help="Use shared capture for comparison")
     capture.set_defaults(exclusive=True)
     calibrate = sub.add_parser("calibrate", help="Calibrate clock offsets using a stationary broadband sound")
-    calibrate.add_argument("--files", nargs=3, required=True)
+    calibrate.add_argument("--files", nargs="+", required=True)
     calibrate.add_argument("--start", type=float, required=True)
     calibrate.add_argument("--end", type=float, required=True)
-    calibrate.add_argument("--distances", type=float, nargs=3, required=True, help="Source to A/B/C distances in meters")
+    calibrate.add_argument("--distances", type=float, nargs="+", required=True, help="One source distance per microphone")
     calibrate.add_argument("--output", type=Path, required=True)
     locate = sub.add_parser("locate", help="Estimate horizontal direction from a calibrated recording")
-    locate.add_argument("--files", nargs=3, required=True)
+    locate.add_argument("--files", nargs="+", required=True)
     locate.add_argument("--calibration", type=Path, required=True)
     locate.add_argument("--config", type=Path, default=ROOT / "config" / "array.json")
     locate.add_argument("--start", type=float, required=True)
     locate.add_argument("--end", type=float, required=True)
     locate.add_argument("--output", type=Path)
     analyze = sub.add_parser("analyze", help="Get direction and speaker for the same event")
-    analyze.add_argument("--files", nargs=3, required=True)
-    analyze.add_argument("--calibration", type=Path, required=True)
+    analyze.add_argument("--files", nargs="+", required=True)
+    analyze.add_argument("--calibration", type=Path)
+    analyze.add_argument("--speaker-recognition", action=argparse.BooleanOptionalAction, default=True)
+    analyze.add_argument("--localization", action=argparse.BooleanOptionalAction, default=True)
     analyze.add_argument("--config", type=Path, default=ROOT / "config" / "array.json")
     analyze.add_argument("--start", type=float, required=True)
     analyze.add_argument("--end", type=float, required=True)
@@ -88,8 +90,8 @@ def main():
         if args.command == "devices":
             list_inputs()
             return 0
-        if not 1 <= len(args.devices) <= 3 or len(set(args.devices)) != len(args.devices):
-            raise ValueError("Select one to three distinct inputs")
+        if not 1 <= len(args.devices) <= 4 or len(set(args.devices)) != len(args.devices):
+            raise ValueError("Select one to four distinct inputs")
         if min(args.devices) < 0 or not 5 <= args.seconds <= 60:
             raise ValueError("Use nonnegative device indices and 5 to 60 seconds")
         return record(args.devices, args.seconds, args.exclusive)
@@ -104,7 +106,9 @@ def main():
                                    args.database, args.threshold, args.margin,
                                    utterance_id=args.utterance_id,
                                    stt=read_json(args.stt_file) if args.stt_file else None,
-                                   observed_at=args.observed_at)
+                                   observed_at=args.observed_at,
+                                   enable_speaker=args.speaker_recognition,
+                                   enable_localization=args.localization)
         else:
             from src.localization import locate
             result = locate(args.files, args.config, args.calibration, args.start, args.end)

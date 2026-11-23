@@ -78,6 +78,6 @@ def load_audio(path, target_rate=None):
 
 def load_tracks(files):
     tracks = [load_audio(path) for path in files]
-    if len(tracks) != 3 or len({rate for rate, _ in tracks}) != 1:
-        raise ValueError("Provide three mono WAVs with the same sample rate")
+    if len(tracks) not in (3, 4) or len({rate for rate, _ in tracks}) != 1:
+        raise ValueError("Provide three or four mono WAVs with the same sample rate")
     return tracks[0][0], [audio for _, audio in tracks]

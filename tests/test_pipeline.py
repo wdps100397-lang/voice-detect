@@ -6,7 +6,7 @@ import numpy as np
 from scipy.io import wavfile
 
 from src.common import save_json
-from src.localization import calibration, direction, locate
+from src.localization import calibration, direction, locate, fit_clock
 from src.speakers import SpeakerEngine, speech_audio, filterbank
 
 
@@ -22,8 +22,8 @@ class PipelineTests(unittest.TestCase):
         noise = np.random.default_rng(42).normal(0, .05, len(source_times))
         vector = np.array([-np.sin(np.deg2rad(angle)), np.cos(np.deg2rad(angle))])
         arrivals = -(self.positions @ vector) / 343
-        offsets = np.zeros(3) if offsets is None else offsets
-        drifts = np.zeros(3) if drifts is None else drifts
+        offsets = np.zeros(len(self.positions)) if offsets is None else offsets
+        drifts = np.zeros(len(self.positions)) if drifts is None else drifts
         return [np.interp(times - delay - offset - drift * times, source_times, noise)
                 for delay, offset, drift in zip(arrivals, offsets, drifts)]
 
@@ -37,6 +37,17 @@ class PipelineTests(unittest.TestCase):
     def test_silence_has_no_direction(self):
         result = direction([np.zeros(self.rate)] * 3, self.rate, self.positions)
         self.assertIsNone(result["azimuth_deg"])
+
+    def test_four_microphone_clock_drift(self):
+        self.rate = 16000
+        self.positions = np.vstack([self.positions, [-.1, .11547]])
+        offsets = [0, .013, -.008, .02]
+        drifts = [0, 50e-6, -35e-6, 25e-6]
+        tracks = self.signals(0, 8, offsets, drifts)
+        result = fit_clock(tracks, self.rate, 1, 7, (2 - self.positions[:, 1]).tolist())
+        self.assertEqual(len(result["channels"]), 4)
+        self.assertAlmostEqual(result["channels"][3]["offset_seconds"], .02, delta=.00005)
+        self.assertAlmostEqual(result["channels"][3]["drift"], 25e-6, delta=10e-6)
 
     def test_calibration_through_files(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -58,7 +58,9 @@ class Track:
 
 
 def record(indices, seconds, exclusive=False):
-    tracks = [Track(label, index) for label, index in zip("ABC", indices)]
+    if not 1 <= len(indices) <= 4 or len(set(indices)) != len(indices):
+        raise ValueError("Select one to four distinct input devices")
+    tracks = [Track(label, index) for label, index in zip("ABCD", indices)]
     with ExitStack() as stack:
         streams = []
         for track in tracks:
@@ -101,6 +103,7 @@ def record(indices, seconds, exclusive=False):
         )
     (folder / "summary.json").write_text(json.dumps({
         "requested_seconds": seconds,
+        "microphone_count": len(tracks),
         "started_at_unix": started_at_unix,
         "exclusive_mode": exclusive,
         "inactive_streams": inactive,
@@ -116,15 +119,15 @@ def record(indices, seconds, exclusive=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--devices", type=int, nargs="+", help="1 to 3 input indices in A/B/C order")
+    parser.add_argument("--devices", type=int, nargs="+", help="1 to 4 input indices in A/B/C/D order")
     parser.add_argument("--exclusive", action="store_true", help="Use WASAPI exclusive capture")
     parser.add_argument("--seconds", type=int, default=20, choices=range(5, 61), metavar="5..60")
     args = parser.parse_args()
     if args.devices is None:
         list_inputs()
         return 0
-    if len(args.devices) > 3 or len(set(args.devices)) != len(args.devices) or min(args.devices) < 0:
-        parser.error("--devices needs 1 to 3 distinct, nonnegative input indices")
+    if len(args.devices) > 4 or len(set(args.devices)) != len(args.devices) or min(args.devices) < 0:
+        parser.error("--devices needs 1 to 4 distinct, nonnegative input indices")
     try:
         return record(args.devices, args.seconds, args.exclusive)
     except (sd.PortAudioError, OSError, ValueError, RuntimeError) as error:

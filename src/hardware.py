@@ -62,8 +62,8 @@ def configure():
     from pycaw.api.mmdeviceapi.depend.structures import PROPERTYKEY, PROPVARIANT
     devices = [d for d in AudioUtilities.GetAllDevices(data_flow=1, device_state=1)
                if 'USBAudio2.0' in d.FriendlyName and d.id.startswith('{0.0.1.') and d.state.value == 1]
-    if len(devices) != 3:
-        raise ValueError(f"Expected three active USBAudio2.0 inputs, found {len(devices)}")
+    if len(devices) not in (3, 4):
+        raise ValueError(f"Expected three or four active USBAudio2.0 inputs, found {len(devices)}")
     key = PROPERTYKEY(GUID('{1DA5D803-D492-4EDD-8C23-E0C0FFEE7F0E}'), 5)
     folder = ROOT / 'runs' / (datetime.now().strftime('%Y%m%d_%H%M%S_%f') + '_settings')
     prepared, before = [], []
