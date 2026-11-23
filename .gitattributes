@@ -1,0 +1,8 @@
+* text=auto
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.onnx binary
+*.wav binary
+*.ipt binary
+*.iam binary
+*.zip binary

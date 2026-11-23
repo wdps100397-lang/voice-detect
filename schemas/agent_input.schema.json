@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "utterance_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "text": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "user_id": {"type": "string", "maxLength": 64}
+  },
+  "required": ["utterance_id", "text", "user_id"],
+  "additionalProperties": false
+}

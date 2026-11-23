@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "voice_detect real speaker observation for Project A",
+  "description": "Real producer schema. Project A commit 93d9bc1 accepts source=mock only and requires source support before receiving these observations.",
+  "type": "object",
+  "properties": {
+    "user_id": {"type": "string", "maxLength": 64},
+    "location": {"type": "string", "maxLength": 128},
+    "azimuth_deg": {"type": "number", "minimum": -180, "maximum": 180},
+    "timestamp": {"type": "number", "minimum": 0},
+    "source": {"const": "voice_detect"}
+  },
+  "required": ["user_id", "location", "azimuth_deg", "timestamp", "source"],
+  "additionalProperties": false
+}

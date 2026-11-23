@@ -1,0 +1,13 @@
+{
+  "devices": [],
+  "sample_rate_hz": 48000,
+  "array_config": "config/array.json",
+  "database": "data/speakers.json",
+  "window_seconds": 2.5,
+  "update_seconds": 0.5,
+  "calibration_seconds": 8,
+  "calibration_distances_m": [1.0, 1.0, 1.0],
+  "max_clock_age_seconds": 0,
+  "threshold": 0.65,
+  "margin": 0.08
+}
