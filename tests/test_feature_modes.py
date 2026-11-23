@@ -85,8 +85,8 @@ class FeatureModeTests(unittest.TestCase):
         self.assertEqual(features["direction"]["status"], "disabled")
         self.assertFalse(any(row["kind"] == "identity" for row in events))
 
-    def test_four_microphone_localization_without_speaker_model(self):
-        config = dict(microphone_count=4, devices=[1, 2, 3, 4], sample_rate_hz=16000,
+    def test_default_four_microphone_localization_without_speaker_model(self):
+        config = dict(devices=[1, 2, 3, 4], sample_rate_hz=16000,
                       enable_speaker_recognition=False, enable_localization=True,
                       array_config="array.json", calibration_distances_m=[1] * 4)
         geometry = dict(geometry_measured=True, positions_m=[[-.1, -.1], [.1, -.1], [.1, .1], [-.1, .1]])

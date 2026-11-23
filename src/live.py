@@ -162,7 +162,7 @@ def raw_window(snapshots, rate, seconds):
 def run_live(config_path, emit, stop=None):
     config = read_json(config_path)
     enable_speaker, enable_localization = switches(config)
-    count = config.get("microphone_count", 3)
+    count = config.get("microphone_count", 4)
     if isinstance(count, bool) or not isinstance(count, int) or count not in (3, 4):
         raise ValueError("microphone_count must be 3 or 4")
     interval = float(config.get("update_seconds", .5))

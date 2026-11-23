@@ -1,4 +1,4 @@
-# 三／四支 USB 麥克風定位與聲紋辨識
+# 四支 USB 麥克風定位與聲紋辨識（可切換三支）
 
 更新日期為 2026-11-23。
 
@@ -19,7 +19,7 @@
 | Project A 接收端 | 已核對的 commit 93d9bc1 只接受 source=mock，真實來源支援仍待接收端處理。 |
 | 自動測試 | 35 項通過，包含 CLI、模型推論、三／四支校準、功能開關及故障隔離。 |
 
-本機附帶設定採三支、兩功能全開。devices 為空，geometry_measured 為 false，四個座標與校準距離都是待替換的範例。部署時依啟用功能填寫裝置、幾何與真人註冊資料。
+附帶設定預設四支、兩功能全開。devices 為空，geometry_measured 為 false，四個座標採邊長 20 公分正方形範例，校準距離也需以實測替換。部署時依啟用功能填寫裝置、幾何與真人註冊資料。
 
 ## 取得專案與安裝
 
@@ -67,12 +67,12 @@ mic_check.py 和 audio_controls.py 保留為早期操作入口。
 在 [config/live.json](config/live.json) 修改以下參數，重新啟動節點後生效。
 
     {
-      "microphone_count": 3,
+      "microphone_count": 4,
       "enable_speaker_recognition": true,
       "enable_localization": true
     }
 
-microphone_count 接受整數 3 或 4。若啟用定位，程式採用 devices、positions_m、calibration_distances_m 的前 N 筆。先填好四支的實際資料後，往後只改 microphone_count 即可切換。
+microphone_count 接受整數 3 或 4，省略時也預設四支。若啟用定位，程式採用 devices、positions_m、calibration_distances_m 的前 N 筆。先填好四支的實際資料後，往後只改 microphone_count 即可切換。
 
 | 聲紋 | 定位 | 運行方式 |
 | --- | --- | --- |

@@ -1,5 +1,5 @@
 {
-  "microphone_count": 3,
+  "microphone_count": 4,
   "enable_speaker_recognition": true,
   "enable_localization": true,
   "devices": [],
