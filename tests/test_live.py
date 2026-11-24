@@ -118,29 +118,33 @@ class LiveTests(unittest.TestCase):
     def test_held_speaker_is_old_and_unknown_clears_it(self):
         mailbox = ros_module.FeatureMailbox()
 
-        def publish(status, user_id, timestamp):
+        def publish(status, user_id, timestamp, direction_status="ok"):
             mailbox.update(dict(timestamp=timestamp, source="voice_detect",
                                 recognition=dict(status=status, user_id=user_id),
-                                direction=dict(status="ok", azimuth_deg=30)))
+                                direction=dict(status=direction_status, azimuth_deg=30)))
             return ros_module.topic_messages(mailbox.snapshot(timestamp))
 
         publish("recognized", "U_A", 100.)
         held = publish("insufficient_speech", "", 105.)
-        self.assertNotIn(ros_module.TOPIC, held)
+        self.assertEqual(held[ros_module.TOPIC]["user_id"], "")
+        self.assertEqual(held[ros_module.TOPIC]["timestamp"], 105.)
         self.assertEqual(held[ros_module.RECOGNITION_TOPIC]["status"], "held")
         self.assertEqual(held[ros_module.RECOGNITION_TOPIC]["user_id"], "U_A")
         self.assertEqual(held[ros_module.RECOGNITION_TOPIC]["timestamp"], 100.)
         self.assertEqual(held[ros_module.DIRECTION_TOPIC]["timestamp"], 105.)
-        pending = publish("pending", "", 106.)
+        pending = publish("pending", "", 106., "no_signal")
         self.assertEqual(pending[ros_module.RECOGNITION_TOPIC]["user_id"], "")
-        self.assertNotIn(ros_module.TOPIC, pending)
-        unknown = publish("unknown", "", 107.)
+        self.assertEqual(pending[ros_module.TOPIC], dict(user_id="", location="", azimuth_deg=None,
+                                                        timestamp=106., source="voice_detect"))
+        unknown = publish("unknown", "", 107., "ambiguous")
         self.assertEqual(unknown[ros_module.RECOGNITION_TOPIC]["status"], "unknown")
         self.assertEqual(unknown[ros_module.TOPIC]["user_id"], "")
+        self.assertIsNone(unknown[ros_module.TOPIC]["azimuth_deg"])
         silence = publish("insufficient_speech", "", 110.)
         self.assertEqual(silence[ros_module.RECOGNITION_TOPIC]["user_id"], "")
-        known = publish("recognized", "U_B", 111.)
+        known = publish("recognized", "U_B", 111., "disabled")
         self.assertEqual(known[ros_module.TOPIC]["user_id"], "U_B")
+        self.assertIsNone(known[ros_module.TOPIC]["azimuth_deg"])
         self.assertIsNone(mailbox.snapshot(115.))
         publish("unknown", "", 116.)
         self.assertEqual(publish("insufficient_speech", "", 117.)[ros_module.RECOGNITION_TOPIC]["user_id"], "")

@@ -17,7 +17,7 @@
 | 真人聲紋 | 已用單支 USB 麥克風註冊兩位講者，兩位的新錄音都成功辨識。另有一段測試音判為未知，一次盲測在選取發話區間後辨識正確。真人辨識率與 0.65／0.08 門檻仍待更多樣本驗證。 |
 | 本機網頁測試台 | 已在 Chrome 驗證聲紋註冊、改 ID、辨識及錄音倒數取消。三軌、四軌合成音測試中，兩者皆將 45° 估為 46°。 |
 | ROS 發布節點 | 程式及套件已提供，觀測暫存與過期邏輯通過軟體測試，實際 DDS 傳輸與 Windows／WSL 程序聯動尚待部署驗收。 |
-| Project A 接收端 | 已核對的 commit 93d9bc1 只接受 source=mock，真實來源支援仍待接收端處理。 |
+| Project A 接收端 | LLM 只訂閱 identity。部署前需確認接收端接受 source=voice_detect 與空方位角，實際整合待驗收。 |
 | 自動測試 | 40 項通過，包含 CLI、模型推論、發話分段、聲紋補樣本、三／四支校準、功能開關及故障隔離。 |
 
 附帶設定預設四支、兩功能全開。devices 為空，geometry_measured 為 false，四個座標採邊長 20 公分正方形範例，校準距離也需以實測替換。部署時依啟用功能填寫裝置、幾何與真人註冊資料。
@@ -175,32 +175,29 @@ ROS 套件在 WSL 執行並管理 Windows worker。需具備 ROS 2 Humble、rclp
 
 ## ROS 輸出與接收端限制
 
-三個 Topic 均使用 std_msgs/msg/String，data 為 JSON 字串，QoS 為 reliable／volatile／depth 10。ROS 計時器每半秒發布仍在三秒有效期內的最新資料。timestamp 通常是音訊觀測時間，held 狀態使用上一位最後一次有效的發話觀測時間。
+三個 Topic 均使用 std_msgs/msg/String，data 為 JSON 字串，QoS 為 reliable／volatile／depth 10。ROS 計時器每半秒發布仍在三秒有效期內的最新資料。timestamp 為音訊觀測時間，recognition 的 held 狀態使用上一位最後一次有效的發話觀測時間。
 
 | Topic | 資料與條件 |
 | --- | --- |
 | /project_a/speaker/recognition | status、user_id、可用的分數或 reason，以及 timestamp、source。單獨聲紋模式也會提供資料。 |
 | /project_a/speaker/direction | status、azimuth_deg、可用的品質或 reason，以及 timestamp、source。無有效方向時角度為 null。 |
-| /project_a/speaker/identity | user_id、location、azimuth_deg、timestamp、source。方向需為 ok，聲紋需為 recognized、unknown 或 disabled。 |
+| /project_a/speaker/identity | LLM 使用的五欄位資料。已確認講者才填 user_id，其他狀態送空字串。方向有效時送角度，其餘送 null。 |
 
 同一段發話一旦辨識成功，會沿用該講者 ID，直到連續一段時間沒有語音。兩人接話時若停頓未達設定秒數，會視為同一段。停止發話後，recognition 可繼續回報 held，表示上一位講者。下一段開始時，pending 表示語音累積中，unknown 表示相似度或分差未達門檻，兩者的 user_id 都是空字串。無可延續的講者時，安靜會回報 insufficient_speech。
 
-LLM 要採用本輪講者時，請訂閱 recognition，只在 status 為 recognized 且 timestamp 仍在三秒內時使用 user_id。收到 pending、unknown、held 或其他狀態時，清除本輪講者。held 供顯示上一位講者，合併 identity 不會將其與新的方向配對。聲紋 disabled、error 或 unusable_audio 時，獨立 Topic 的 user_id 為空。定位 disabled、error、ambiguous 或 no_signal 時，獨立 Topic 的 azimuth_deg 為 null。
+LLM 只需訂閱 identity，以最新且三秒內的觀測決定講者。收到空 user_id 就清除上一位講者，即使 azimuth_deg 同時是 null 也應更新快取。identity 使用當次觀測時間。只開聲紋時可收到講者 ID 與 null 角度。只開定位時可收到空 ID 與有效角度。
 
-啟動節點後，可在 WSL 查看聲紋狀態的變化。
+啟動節點後，可在 WSL 查看 LLM 收到的資料。
 
-    ros2 topic echo /project_a/speaker/recognition
+    ros2 topic echo /project_a/speaker/identity
 
-只開定位時，合併 Topic 可發布空 user_id 與有效角度。只開聲紋時，身分從 recognition Topic 取得。兩項關閉時，獨立 Topic 會持續回報 disabled，舊合併觀測依三秒時效過期。
+聲紋狀態可透過 recognition 查看。held 表示上一位講者。聲紋 disabled、error 或 unusable_audio 時，recognition 的 user_id 為空。定位 disabled、error、ambiguous 或 no_signal 時，direction 的 azimuth_deg 為 null。兩項關閉時，identity 持續發布空 ID 與 null 角度。
 
-已核對 Project A feature/live-dialogue-monitor 的 commit 93d9bc1af753deadd4ab2c5487438e2cc765301c，當時的接收器有以下限制。
+Project A 接收端需支援 source=voice_detect，以及 azimuth_deg 為 [-180, 180] 內的數字或 null。公開的 feature/live-dialogue-monitor 分支仍只接受 source=mock 與有限角度。部署時請確認實際版本支援上述欄位。
 
-- speaker/identity 僅接受 source=mock，本專案真實來源為 voice_detect，接收端需擴充來源支援。
-- Chat 當時僅訂閱合併 identity Topic。只開聲紋時若要使用 user_id，需接收 recognition Topic。
-- use_speaker_identity=true 時，以文字提交當下三秒內最新觀測決定當輪身分，尚需整合音訊片段精確配對。
-- direction 是相對麥克風的角度，location 保留空字串，交付區與手臂座標由後續系統定義。
+use_speaker_identity=true 時，以文字提交當下三秒內的最新觀測決定當輪身分，音訊片段的精確配對仍待整合。角度相對於麥克風陣列，location 保留空字串。交付區與手臂座標由後續系統定義。
 
-接收器的後續更新需以其程式為準。參考來源見 [Project A 身分驗證程式](https://github.com/Ktliu-Tyler/TM-LLM-Robot/blob/93d9bc1af753deadd4ab2c5487438e2cc765301c/src/project_a_llm/project_a_llm/speaker_identity.py)。
+參考來源見 [Project A 身分驗證程式](https://github.com/Ktliu-Tyler/TM-LLM-Robot/blob/feature/live-dialogue-monitor/src/project_a_llm/project_a_llm/speaker_identity.py)。
 
 ## 離線錄音與分析
 

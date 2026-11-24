@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "voice_detect real speaker observation for Project A",
-  "description": "Real producer schema. Project A commit 93d9bc1 accepts source=mock only and requires source support before receiving these observations.",
+  "description": "Real producer schema. An empty user_id clears the speaker. A null azimuth_deg indicates no valid direction.",
   "type": "object",
   "properties": {
     "user_id": {"type": "string", "maxLength": 64},
     "location": {"type": "string", "maxLength": 128},
-    "azimuth_deg": {"type": "number", "minimum": -180, "maximum": 180},
+    "azimuth_deg": {"type": ["number", "null"], "minimum": -180, "maximum": 180},
     "timestamp": {"type": "number", "minimum": 0},
     "source": {"const": "voice_detect"}
   },

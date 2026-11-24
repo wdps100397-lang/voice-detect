@@ -73,14 +73,13 @@ def topic_messages(features):
     timestamp, source = features["timestamp"], features["source"]
     status = recognition["status"]
     recognition_time = recognition["last_recognized_at"] if status == "held" else timestamp
-    messages = {
+    return {
+        TOPIC: dict(user_id=recognition["user_id"] if status == "recognized" else "",
+                    location="", azimuth_deg=direction["azimuth_deg"],
+                    timestamp=timestamp, source=source),
         RECOGNITION_TOPIC: dict(recognition, timestamp=recognition_time, source=source),
         DIRECTION_TOPIC: dict(direction, timestamp=timestamp, source=source),
     }
-    if direction["status"] == "ok" and status in ("recognized", "unknown", "disabled"):
-        messages[TOPIC] = dict(user_id=recognition["user_id"], location="",
-                               azimuth_deg=direction["azimuth_deg"], timestamp=timestamp, source=source)
-    return messages
 
 
 def main(args=None):
