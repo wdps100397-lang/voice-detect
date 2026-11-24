@@ -9,6 +9,12 @@ const speakerKeys = ["database", "device", "mode", "duration", "countdown", "gai
 const arrayKeys = ["count", "mode", "rate", "duration", "countdown", "cal_start", "cal_end",
   "test_start", "test_end", "extrapolation", "expected"];
 let token, job, source, direction, drag, selectedId, rosterDatabase;
+let page = "speaker";
+let appendTarget = null;
+let revision = 0;
+let saveTimer;
+let dirty = false;
+let initialized = false;
 let busy = false;
 let samples = [];
 let tracks = [null, null, null, null];
@@ -19,6 +25,7 @@ async function api(path, data, file) {
     options.method = "POST";
     options.headers = { "X-Workbench-Token": token, "Content-Type": "application/json" };
     options.body = JSON.stringify(data);
+    if (path === "settings") options.keepalive = true;
     if (file) {
       options.headers["Content-Type"] = "application/octet-stream";
       options.headers["X-File-Name"] = encodeURIComponent(file.name);
@@ -61,7 +68,8 @@ function click(id, run) {
   el(id).addEventListener("click", () => action(run));
 }
 
-function tab(page) {
+function tab(nextPage) {
+  page = nextPage;
   el("speaker").hidden = page !== "speaker";
   el("array").hidden = page !== "array";
   const speaker = page === "speaker";
@@ -87,10 +95,47 @@ function settings() {
   return { speaker, array };
 }
 
+function saveDevice(id) {
+  const selected = el(id).selectedOptions[0];
+  return selected?.value ? selected.textContent : el(id).dataset.unavailable || "";
+}
+
+function settingsChanged(immediate = false) {
+  if (!initialized) return;
+  dirty = true;
+  text("save-state", "正在儲存設定");
+  clearTimeout(saveTimer);
+  if (immediate) persistSettings();
+  else saveTimer = setTimeout(persistSettings, 180);
+}
+
+async function persistSettings() {
+  if (!dirty) return;
+  clearTimeout(saveTimer);
+  dirty = false;
+  const saved = settings();
+  saved.speaker.device = saveDevice("s-device");
+  saved.speaker.name = value("enroll-id");
+  saved.speaker.append_id = appendTarget?.id || "";
+  saved.speaker.append_database = appendTarget?.database || "";
+  saved.array.devices = labels.map(label => saveDevice("mic-" + label));
+  const current = revision = Math.max(Date.now(), revision + 1);
+  try {
+    await api("settings", { ...saved, page, revision: current });
+    if (current === revision && !dirty) text("save-state", "設定已儲存");
+  } catch {
+    if (current === revision) {
+      dirty = true;
+      text("save-state", "儲存失敗，請重試");
+    }
+  }
+}
+
 function applySettings(speaker, array) {
   speakerKeys.filter(key => key !== "device").forEach(key => set("s-" + key, speaker[key]));
   arrayKeys.forEach(key => set("a-" + key, array[key]));
   el("a-measured").checked = array.measured === true;
+  set("enroll-id", speaker.name);
   labels.forEach((label, i) => {
     set("x-" + label, array.positions?.[i]?.[0]);
     set("y-" + label, array.positions?.[i]?.[1]);
@@ -133,18 +178,26 @@ async function refreshDevices(refresh, preferred) {
         || device.index + " · " + device.name === String(saved));
       return match ? String(match.index) : "";
     };
-    const setSelect = (id, selected) => {
+    const setSelect = (id, selected, previous) => {
       const select = el(id);
       select.replaceChildren(new Option("選擇麥克風", ""));
       devices.forEach(device => select.add(new Option(device.index + " · " + device.name, device.index)));
       select.value = selected;
+      select.dataset.unavailable = !selected && previous ? String(previous) : "";
     };
     const usb = devices.find(device => /usb/i.test(device.name));
-    setSelect("s-device", resolve(previous.speaker.device) || (usb ? String(usb.index) : ""));
-    labels.forEach((label, i) => setSelect("mic-" + label, refresh ? "" : resolve(previous.array.devices?.[i])));
+    const preferredSpeaker = previous.speaker.device;
+    const speaker = preferredSpeaker ? resolve(preferredSpeaker) : usb ? String(usb.index) : "";
+    setSelect("s-device", speaker, preferredSpeaker);
+    labels.forEach((label, i) => {
+      const saved = refresh ? "" : previous.array.devices?.[i];
+      setSelect("mic-" + label, resolve(saved), saved);
+    });
     text("device-count", devices.length + " 個 WASAPI 輸入");
     return devices.length;
   } catch (error) {
+    el("s-device").dataset.unavailable = previous.speaker.device || "";
+    labels.forEach((label, i) => { el("mic-" + label).dataset.unavailable = previous.array.devices?.[i] || ""; });
     text("device-count", "無法讀取麥克風");
     throw error;
   }
@@ -282,8 +335,40 @@ function cell(row, content) {
   return td;
 }
 
+function showEnrollment() {
+  const appending = appendTarget !== null;
+  text("enrollment-title", appending ? "替講者補錄聲紋" : "註冊新講者");
+  text("enrollment-note", appending
+    ? "講者 " + appendTarget.id + "，錄一段新的語音並加入樣本後，即可更新原有聲紋。"
+    : "先加入至少兩段不同的錄音。要替既有講者補錄，請在名單按「補樣本」。");
+  text("enroll", appending ? "更新聲紋樣本" : "註冊聲紋");
+  el("enroll-name").hidden = appending;
+  el("cancel-append").hidden = !appending;
+}
+
+function rosterButton(label, description, handler) {
+  const button = document.createElement("button");
+  button.textContent = label;
+  button.setAttribute("aria-label", description);
+  button.dataset.action = "";
+  button.disabled = busy;
+  button.addEventListener("click", () => {
+    if (rosterDatabase !== value("s-database")) {
+      status("資料庫路徑已變更，請先載入名單", { error: true });
+      return;
+    }
+    handler();
+  });
+  return button;
+}
+
 function showRoster(data) {
   rosterDatabase = data.database;
+  if (appendTarget && (appendTarget.database !== rosterDatabase ||
+      !data.speakers.some(speaker => speaker.id === appendTarget.id))) {
+    appendTarget = null;
+  }
+  showEnrollment();
   const body = el("roster");
   body.replaceChildren();
   if (!data.speakers.length) {
@@ -294,25 +379,23 @@ function showRoster(data) {
     const row = body.insertRow();
     cell(row, speaker.id);
     cell(row, speaker.recordings ?? "—");
-    const operations = cell(row, "");
-    operations.className = "align-right";
-    const button = document.createElement("button");
-    button.textContent = "修改 ID";
-    button.setAttribute("aria-label", "修改 " + speaker.id + " 的 ID");
-    button.dataset.action = "";
-    button.disabled = busy;
-    button.addEventListener("click", () => {
-      if (rosterDatabase !== value("s-database")) {
-        status("資料庫路徑已變更，請先載入名單", { error: true });
-        return;
-      }
+    const operations = document.createElement("div");
+    operations.className = "speaker-actions";
+    const append = rosterButton("補樣本", "替 " + speaker.id + " 補樣本", () => {
+      appendTarget = { id: speaker.id, database: rosterDatabase };
+      showEnrollment();
+      settingsChanged(true);
+      el("enrollment").scrollIntoView({ block: "nearest" });
+    });
+    const rename = rosterButton("修改 ID", "修改 " + speaker.id + " 的 ID", () => {
       selectedId = speaker.id;
       text("old-id", "目前 ID · " + speaker.id);
       set("new-id", speaker.id);
       el("rename-dialog").showModal();
       el("new-id").select();
     });
-    operations.append(button);
+    operations.append(append, rename);
+    row.insertCell().append(operations);
   }
 }
 
@@ -359,7 +442,26 @@ function renderTracks() {
 }
 
 createMicRows();
-document.querySelectorAll("[data-page]").forEach(button => button.addEventListener("click", () => tab(button.dataset.page)));
+document.querySelectorAll("[data-page]").forEach(button => button.addEventListener("click", () => {
+  tab(button.dataset.page);
+  settingsChanged(true);
+}));
+const deviceInputs = new Set(["s-device", ...labels.map(label => "mic-" + label)]);
+const settingInputs = new Set([...speakerKeys.map(key => "s-" + key), ...arrayKeys.map(key => "a-" + key),
+  "enroll-id", "a-measured", ...deviceInputs,
+  ...labels.flatMap(label => ["x-" + label, "y-" + label, "distance-" + label])]);
+for (const eventName of ["input", "change"]) {
+  document.addEventListener(eventName, event => {
+    const id = event.target.id;
+    if (!settingInputs.has(id)) return;
+    if (deviceInputs.has(id)) delete event.target.dataset.unavailable;
+    settingsChanged(eventName === "change");
+  });
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) persistSettings();
+});
+window.addEventListener("pagehide", persistSettings);
 new ResizeObserver(redraw).observe(el("speaker").parentElement);
 new ResizeObserver(drawWave).observe(el("waveform").parentElement);
 el("a-count").addEventListener("change", countChanged);
@@ -389,12 +491,12 @@ wave.addEventListener("pointermove", selectRange);
 wave.addEventListener("pointerup", event => { selectRange(event); drag = undefined; });
 wave.addEventListener("pointercancel", () => { drag = undefined; });
 
-click("save", async () => {
-  const result = await api("settings", settings());
-  status("已儲存測試設定 · " + result.path);
-});
+click("save", () => settingsChanged(true));
 click("refresh", async () => {
-  const count = await refreshDevices(true);
+  const saved = settings();
+  saved.speaker.device = saveDevice("s-device");
+  const count = await refreshDevices(true, saved);
+  settingsChanged(true);
   status("找到 " + count + " 個 WASAPI 輸入。若要定位，請重新確認 A～D 的裝置順序。");
 });
 el("stop").addEventListener("click", async () => {
@@ -435,15 +537,25 @@ click("add-sample", () => {
   status("已加入第 " + samples.length + " 段樣本");
 });
 click("enroll", async () => {
-  const name = value("enroll-id").trim();
+  const target = appendTarget;
+  const database = value("s-database");
+  if (target && target.database !== database) throw new Error("資料庫路徑已變更，請先載入名單");
+  const name = target?.id || value("enroll-id").trim();
   if (!name) throw new Error("請填入新的講者 ID");
-  const result = await runJob("enroll", { database: value("s-database"), name, samples });
+  const result = await runJob(target ? "append" : "enroll", { database, name, samples });
   set("s-database", result.database);
   showRoster(result);
   samples = [];
   showSamples();
-  set("enroll-id", "");
-  status("已註冊 " + name);
+  if (!target) set("enroll-id", "");
+  settingsChanged(true);
+  const count = result.speakers.find(speaker => speaker.id === name)?.recordings;
+  status(target ? name + " 已更新，共 " + count + " 段樣本" : "已註冊 " + name);
+});
+click("cancel-append", () => {
+  appendTarget = null;
+  showEnrollment();
+  settingsChanged(true);
 });
 click("identify", async () => {
   const data = { ...settings().speaker, clip: clip() };
@@ -478,12 +590,14 @@ async function loadRoster(verify) {
 }
 click("load-database", async () => {
   await loadRoster(true);
+  settingsChanged(true);
   status("已載入聲紋資料庫");
 });
 click("create-database", async () => {
   const result = await runJob("create", { database: value("s-database") });
   set("s-database", result.database);
   showRoster(result);
+  settingsChanged(true);
   status("已建立空白聲紋資料庫");
 });
 el("rename-cancel").addEventListener("click", () => el("rename-dialog").close());
@@ -495,7 +609,9 @@ el("rename-form").addEventListener("submit", event => {
   if (current === updated) return;
   action(async () => {
     const result = await runJob("rename", { database: rosterDatabase, current, updated });
+    if (appendTarget?.id === current && appendTarget.database === rosterDatabase) appendTarget.id = updated;
     showRoster(result);
+    settingsChanged(true);
     status("已將 " + current + " 改為 " + updated);
   });
 });
@@ -519,6 +635,7 @@ el("a-geometry").addEventListener("change", event => {
     el("a-measured").checked = data.geometry_measured === true;
     set("a-extrapolation", data.max_extrapolation_seconds ?? 30);
     countChanged();
+    settingsChanged(true);
     status("已匯入 " + file.name);
   });
 });
@@ -594,9 +711,17 @@ async function init() {
   try {
     const defaults = await api("bootstrap");
     token = defaults.token;
+    revision = defaults.revision;
     applySettings(defaults.speaker, defaults.array);
-    await loadRoster(false);
-    await refreshDevices(false, defaults);
+    if (defaults.speaker.append_id && defaults.speaker.append_database) {
+      appendTarget = { id: defaults.speaker.append_id, database: defaults.speaker.append_database };
+    }
+    tab(defaults.page);
+    const results = await Promise.allSettled([loadRoster(false), refreshDevices(false, defaults)]);
+    for (const result of results) {
+      if (result.status === "rejected") status(result.reason.message, { error: true });
+    }
+    initialized = true;
   } catch (error) {
     status(error.message, { error: true });
   } finally {

@@ -67,25 +67,53 @@ class SpeakerEngine:
             raise ValueError("Database model mismatch. Re-enroll with this model.")
         return data
 
-    def enroll(self, name, files, database):
+    def enroll(self, name, files, database, *, source_hashes=None):
+        return self.store_samples(name, files, database, append=False, source_hashes=source_hashes)
+
+    def append_samples(self, name, files, database, *, source_hashes=None):
+        return self.store_samples(name, files, database, append=True, source_hashes=source_hashes)
+
+    def store_samples(self, name, files, database, *, append, source_hashes):
         validate_user_id(name)
-        if len(files) < 2:
+        if append and not files:
+            raise ValueError("請先加入至少一段新錄音")
+        if not append and len(files) < 2:
             raise ValueError("Use at least two different recordings per enrollment")
-        if len({fingerprint(path) for path in files}) != len(files):
+        clip_hashes = [fingerprint(path) for path in files]
+        source_hashes = list(source_hashes) if source_hashes is not None else clip_hashes
+        if len(source_hashes) != len(files):
+            raise ValueError("Provide a source fingerprint for each enrollment recording")
+        if min(len(set(clip_hashes)), len(set(source_hashes))) < len(files):
             raise ValueError("Enrollment recordings must be distinct")
-        embeddings = np.array([self.embedding(path) for path in files])
-        template = embeddings.mean(axis=0)
-        norm = np.linalg.norm(template)
-        if norm < 1e-8:
-            raise ValueError("Inconsistent enrollment recordings")
-        template /= norm
+        total = np.sum([self.embedding(path) for path in files], axis=0, dtype=np.float64)
+        count = len(files)
         with database_lock(database):
             data = self.database(database)
-            if name in data["speakers"]:
-                raise ValueError("Speaker already enrolled. Choose a new name or back up and edit the database.")
-            data["speakers"][name] = dict(template=template.tolist(), recordings=len(files))
+            speakers = data["speakers"]
+            previous = speakers.get(name)
+            if append:
+                if previous is None:
+                    raise ValueError(f"找不到聲紋 ID：{name}")
+                old_hashes = previous.get("recording_hashes", [])
+                if set(source_hashes).intersection(old_hashes):
+                    raise ValueError("有錄音已用於這位講者，請改用新錄音")
+                old_count = previous.get("recordings", 1)
+                # Older databases stored only a normalized template.
+                old_total = previous.get("embedding_sum")
+                if old_total is None:
+                    old_total = np.asarray(previous["template"]) * old_count
+                total = total + old_total
+                count += old_count
+                source_hashes = [*old_hashes, *source_hashes]
+            elif previous is not None:
+                raise ValueError("講者 ID 已存在，請使用「補樣本」")
+            norm = np.linalg.norm(total)
+            if not np.isfinite(norm) or norm < 1e-8:
+                raise ValueError("Inconsistent enrollment recordings")
+            speakers[name] = dict(previous or {}, template=(total / norm).tolist(), recordings=count,
+                                  embedding_sum=total.tolist(), recording_hashes=source_hashes)
             save_json(database, data)
-        return dict(status="enrolled", user_id=name, recordings=len(files))
+        return dict(status="updated" if append else "enrolled", user_id=name, recordings=count)
 
     def rename(self, database, current, updated):
         validate_user_id(updated)

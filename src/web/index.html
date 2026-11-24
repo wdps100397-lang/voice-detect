@@ -23,7 +23,10 @@
   <main>
     <div class="heading">
       <div><h1 id="title">聲紋辨識</h1><p id="description">註冊講者、修改 ID，或用一段新錄音驗證辨識結果。</p></div>
-      <button id="save" data-action>儲存測試設定</button>
+      <div class="save-controls">
+        <span id="save-state" role="status">設定會自動儲存</span>
+        <button id="save" data-action>立即儲存</button>
+      </div>
     </div>
     <div class="status" id="status" hidden>
       <span id="status-message" role="status" aria-live="polite"></span>
@@ -56,12 +59,15 @@
           </div>
           <div class="buttons"><button id="add-sample" data-action>加入註冊樣本</button><button id="identify" class="primary" data-action>辨識這段錄音</button></div>
         </section>
-        <section class="card">
-          <h2>註冊新講者</h2>
-          <p>先加入至少兩段不同的錄音。</p>
+        <section class="card" id="enrollment">
+          <h2 id="enrollment-title">註冊新講者</h2>
+          <p id="enrollment-note">先加入至少兩段不同的錄音。要替既有講者補錄，請在名單按「補樣本」。</p>
           <ul id="samples" class="list"></ul>
-          <label>新講者 ID<input id="enroll-id" type="text" maxlength="64" placeholder="例如 voice_test_03"></label>
-          <button id="enroll" class="primary" data-action>註冊聲紋</button>
+          <label id="enroll-name">新講者 ID<input id="enroll-id" type="text" maxlength="64" placeholder="例如 voice_test_03"></label>
+          <div class="buttons">
+            <button id="enroll" class="primary" data-action>註冊聲紋</button>
+            <button id="cancel-append" hidden data-action>返回新講者註冊</button>
+          </div>
         </section>
       </div>
       <div class="column">

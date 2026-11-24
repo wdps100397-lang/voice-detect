@@ -58,7 +58,7 @@ class Track:
 
 
 def capture_to_directory(indices, seconds, exclusive=False, *, samplerate=None,
-                         on_started=None, on_progress=None, stop=None):
+                         on_started=None, on_progress=None, stop=None, folder=None):
     if not 1 <= len(indices) <= 4 or len(set(indices)) != len(indices):
         raise ValueError("Select one to four distinct input devices")
     if stop and stop.is_set():
@@ -99,9 +99,10 @@ def capture_to_directory(indices, seconds, exclusive=False, *, samplerate=None,
 
     if stop and stop.is_set():
         raise InterruptedError("已停止錄音")
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    folder = Path(__file__).resolve().parents[1] / "runs" / f"{stamp}_mic_check"
-    folder.mkdir(parents=True)
+    if folder is None:
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        folder = Path(__file__).resolve().parents[1] / "runs" / f"{stamp}_mic_check"
+        folder.mkdir(parents=True)
     results = [track.save(folder) for track in tracks]
     needs_review = bool(inactive)
     for result in results:

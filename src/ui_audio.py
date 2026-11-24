@@ -16,7 +16,7 @@ def new_run(kind):
     return folder
 
 
-def speaker_clip(source, start, end, gain):
+def speaker_clip(folder, source, start, end, gain):
     rate, audio = load_audio(source, 16000)
     duration = len(audio) / rate
     end = duration if end is None else end
@@ -28,10 +28,8 @@ def speaker_clip(source, start, end, gain):
     segment = segment * 10 ** (gain / 20)
     if np.max(np.abs(segment)) >= .999:
         raise ValueError("放大後會削波，請降低數位增益")
-    folder = new_run("speaker")
     clip = folder / "speech.wav"
     wavfile.write(clip, rate, np.round(segment * 32768).astype("<i2"))
-    save_json(folder / "clip.json", dict(source=str(source), start=start, end=end, gain_db=gain))
     return clip
 
 

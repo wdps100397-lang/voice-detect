@@ -113,6 +113,44 @@ class PipelineTests(unittest.TestCase):
                 engine.enroll("silence", [first, second], database)
             self.assertFalse(database.exists())
 
+    def test_appending_records_matches_fresh_enrollment_and_rejects_reuse(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            first, second, third = [folder / name for name in ("one", "two", "three")]
+            embeddings = {first: np.array([1., 0.]), second: np.array([0., 1.]), third: np.array([1., 0.])}
+            for path in embeddings:
+                path.write_bytes(path.name.encode())
+            engine = SpeakerEngine.__new__(SpeakerEngine)
+            engine.model_hash = "test"
+            engine.embedding = embeddings.__getitem__
+            database = folder / "speakers.json"
+            engine.enroll("A", [first, second], database)
+            with self.assertRaisesRegex(ValueError, "已用於"):
+                engine.append_samples("A", [first], database)
+            self.assertEqual(engine.database(database)["speakers"]["A"]["recordings"], 2)
+
+            engine.append_samples("A", [third], database)
+            engine.enroll("B", [first, second, third], database)
+            speakers = engine.database(database)["speakers"]
+            self.assertEqual(speakers["A"]["recordings"], 3)
+            np.testing.assert_allclose(speakers["A"]["template"], speakers["B"]["template"])
+
+    def test_appending_to_legacy_template_keeps_prior_weight(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            database = folder / "speakers.json"
+            sample = folder / "new.wav"
+            sample.write_bytes(b"new")
+            save_json(database, dict(schema=1, model_sha256="test", speakers={
+                "legacy": dict(template=[1., 0.], recordings=2)}))
+            engine = SpeakerEngine.__new__(SpeakerEngine)
+            engine.model_hash = "test"
+            engine.embedding = lambda path: np.array([0., 1.])
+            engine.append_samples("legacy", [sample], database)
+            row = engine.database(database)["speakers"]["legacy"]
+            self.assertEqual(row["recordings"], 3)
+            np.testing.assert_allclose(row["template"], np.array([2., 1.]) / np.sqrt(5))
+
 
 if __name__ == "__main__":
     unittest.main()

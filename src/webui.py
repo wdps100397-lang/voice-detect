@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import secrets
 import shutil
+from tempfile import TemporaryDirectory, mkdtemp
 import threading
 from urllib.parse import quote, unquote, urlsplit
 import webbrowser
@@ -71,7 +72,8 @@ def mic_count(value):
 
 
 class Workbench:
-    def __init__(self):
+    def __init__(self, scratch):
+        self.scratch = scratch
         self.token = secrets.token_urlsafe(24)
         self.lock = threading.RLock()
         self.engine = None
@@ -79,6 +81,7 @@ class Workbench:
         self.files = {}
         self.jobs = {}
         self.active = None
+        self.worker = None
 
     def bootstrap(self):
         config = optional_json(ROOT / "config" / "live.json")
@@ -89,6 +92,7 @@ class Workbench:
             database = tests[0]
         saved = optional_json(SETTINGS)
         speaker = dict(database=str(database), device="", mode="獨佔", duration=8, countdown=3,
+                       name="", append_id="", append_database="",
                        gain=0, threshold=config.get("threshold", .65), margin=config.get("margin", .08))
         array = dict(count=config.get("microphone_count", 4), mode="獨佔",
                      rate=config.get("sample_rate_hz", 48000), duration=28, countdown=3,
@@ -102,7 +106,18 @@ class Workbench:
             previous = saved.get(key, {})
             if isinstance(previous, dict):
                 defaults.update({key: previous[key] for key in defaults.keys() & previous.keys()})
-        return dict(token=self.token, speaker=speaker, array=array)
+        return dict(token=self.token, speaker=speaker, array=array,
+                    page="array" if saved.get("page") == "array" else "speaker",
+                    revision=saved.get("revision", 0))
+
+    def save_settings(self, data):
+        revision = data.get("revision", 0)
+        with self.lock:
+            previous = optional_json(SETTINGS)
+            if revision >= previous.get("revision", 0):
+                save_json(SETTINGS, dict(speaker=data["speaker"], array=data["array"],
+                                        page=data.get("page", "speaker"), revision=revision))
+        return dict(path=str(SETTINGS))
 
     def refresh_devices(self, reinitialize):
         with self.lock:
@@ -162,7 +177,7 @@ class Workbench:
     def import_wav(self, source, length, name, analyze):
         if not 44 <= length <= MAX_UPLOAD or not name.lower().endswith(".wav"):
             raise ValueError("請選擇 64 MB 以內的 WAV 檔")
-        folder = new_run("import")
+        folder = Path(mkdtemp(prefix="import-", dir=self.scratch))
         path = folder / "audio.wav"
         item = None
         try:
@@ -222,7 +237,7 @@ class Workbench:
             spans = intervals(data)
             folder = paths[0].parent
             if paths != [folder / f"{label}.wav" for label in "ABCD"[:count]]:
-                folder = new_run("array_input")
+                folder = Path(mkdtemp(prefix="array-", dir=self.scratch))
                 for label, path in zip("ABCD", paths):
                     shutil.copyfile(path, folder / f"{label}.wav")
             result, clock, output = localize_run(folder, count, positions, distances, *spans,
@@ -240,22 +255,34 @@ class Workbench:
                 save_json(database, engine.database(database))
         elif action == "rename":
             engine.rename(database, data["current"], data["updated"].strip())
-        elif action == "enroll":
+        elif action in ("enroll", "append"):
             samples = [self.clip_args(sample) for sample in data["samples"]]
-            if len(samples) < 2 or len({fingerprint(sample[0]) for sample in samples}) != len(samples):
-                raise ValueError("請加入至少兩段不同原始錄音，再註冊聲紋")
+            append = action == "append"
+            if len(samples) < (1 if append else 2):
+                raise ValueError("請加入至少一段新錄音" if append else "請加入至少兩段不同的原始錄音")
+            hashes = [fingerprint(sample[0]) for sample in samples]
+            if len(set(hashes)) != len(samples):
+                raise ValueError("請使用不同的原始錄音")
             from src.speakers import validate_user_id
             name = data["name"].strip()
             validate_user_id(name)
-            engine.enroll(name, [speaker_clip(*sample) for sample in samples], database)
+            store = engine.append_samples if append else engine.enroll
+            with TemporaryDirectory(dir=self.scratch) as temp:
+                clips = []
+                for index, sample in enumerate(samples):
+                    folder = Path(temp) / str(index)
+                    folder.mkdir()
+                    clips.append(speaker_clip(folder, *sample))
+                store(name, clips, database, source_hashes=hashes)
         elif action == "identify":
             threshold = number(data.get("threshold"), "相似度門檻", -1, 1)
             margin = number(data.get("margin"), "最低分差", 0, 2)
             if not engine.database(database)["speakers"]:
                 raise ValueError("聲紋資料庫沒有講者，請先註冊")
-            clip = speaker_clip(*self.clip_args(data["clip"]))
-            result = engine.identify(clip, database, threshold, margin)
-            output = clip.parent / "recognition.json"
+            with TemporaryDirectory(dir=self.scratch) as temp:
+                result = engine.identify(speaker_clip(Path(temp), *self.clip_args(data["clip"])),
+                                         database, threshold, margin)
+            output = new_run("speaker") / "recognition.json"
             save_json(output, dict(database=str(database), margin=margin, **result))
             return dict(result=result, margin=margin, threshold=threshold, output=self.register_file(output))
         return self.roster(str(database))
@@ -296,9 +323,14 @@ class Workbench:
                 cue = "測試段完成"
             report(f"錄音中 {elapsed:.1f} / {seconds} 秒 · {cue}", elapsed / seconds)
 
-        folder, summary = capture_to_directory(indices, seconds, data.get("mode") == "獨佔",
-                                               samplerate=rate, stop=stop, on_progress=progress,
-                                               on_started=lambda: progress(0))
+        folder = Path(mkdtemp(prefix="record-", dir=self.scratch))
+        try:
+            folder, summary = capture_to_directory(indices, seconds, data.get("mode") == "獨佔",
+                                                   samplerate=rate, stop=stop, on_progress=progress,
+                                                   on_started=lambda: progress(0), folder=folder)
+        except Exception:
+            shutil.rmtree(folder)
+            raise
         files = self.tracks(str(folder), count) if array else [self.waveform(self.register_file(folder / "A.wav"))]
         return dict(folder=str(folder), files=files, summary=summary)
 
@@ -306,6 +338,7 @@ class Workbench:
         messages = {
             "record-speaker": "準備聲紋錄音", "record-array": "準備多軌錄音",
             "create": "建立聲紋資料庫", "rename": "更新講者 ID", "enroll": "處理註冊樣本",
+            "append": "正在擴增聲紋樣本",
             "identify": "正在比對聲紋", "direction": "正在校準時間差並估算方位",
         }
         if action not in messages:
@@ -339,7 +372,8 @@ class Workbench:
                 if len(self.jobs) > 30:
                     del self.jobs[next(iter(self.jobs))]
 
-        threading.Thread(target=run, daemon=True).start()
+        self.worker = threading.Thread(target=run, daemon=True)
+        self.worker.start()
         return dict(id=job_id)
 
     def job_state(self, job_id):
@@ -354,8 +388,20 @@ class Workbench:
                 self.stop.set()
             return self.job_state(job_id)
 
+    def close(self):
+        with self.lock:
+            if self.active:
+                self.cancel(self.active)
+        if self.worker is not None:
+            self.worker.join()
+
+
+class LocalServer(ThreadingHTTPServer):
+    daemon_threads = False
+
 
 class Handler(BaseHTTPRequestHandler):
+    timeout = 10
     def log_message(self, *_):
         pass
 
@@ -472,8 +518,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/roster":
             result = app.roster(data.get("database"), data.get("verify", False))
         elif path == "/api/settings":
-            save_json(SETTINGS, dict(speaker=data["speaker"], array=data["array"]))
-            result = dict(path=str(SETTINGS))
+            result = app.save_settings(data)
         elif path == "/api/tracks":
             result = app.tracks(data.get("folder"), mic_count(data.get("count")))
         elif path == "/api/start":
@@ -489,8 +534,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main(open_browser=True):
-    with ThreadingHTTPServer(("127.0.0.1", 0), Handler) as server:
-        server.app = Workbench()
+    with TemporaryDirectory(prefix="voice-detect-") as scratch, LocalServer(("127.0.0.1", 0), Handler) as server:
+        server.app = Workbench(Path(scratch))
         address = f"http://127.0.0.1:{server.server_port}"
         print(f"麥克風測試台 {address}", flush=True)
         print("關閉此視窗或按 Ctrl+C 結束。", flush=True)
@@ -499,5 +544,8 @@ def main(open_browser=True):
         try:
             server.serve_forever()
         except KeyboardInterrupt:
-            if server.app.active:
-                server.app.cancel(server.app.active)
+            pass
+        finally:
+            # Drain requests before removing the temporary WAVs.
+            server.server_close()
+            server.app.close()
