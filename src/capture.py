@@ -57,16 +57,19 @@ class Track:
         }
 
 
-def record(indices, seconds, exclusive=False):
+def capture_to_directory(indices, seconds, exclusive=False, *, samplerate=None,
+                         on_started=None, on_progress=None, stop=None):
     if not 1 <= len(indices) <= 4 or len(set(indices)) != len(indices):
         raise ValueError("Select one to four distinct input devices")
+    if stop and stop.is_set():
+        raise InterruptedError("已停止錄音")
     tracks = [Track(label, index) for label, index in zip("ABCD", indices)]
     with ExitStack() as stack:
         streams = []
         for track in tracks:
             try:
                 stream = sd.RawInputStream(
-                    device=track.index, channels=1, samplerate=track.rate,
+                    device=track.index, channels=1, samplerate=samplerate or track.rate,
                     dtype="int16", callback=track.collect,
                     extra_settings=sd.WasapiSettings(exclusive=True) if exclusive else None,
                 )
@@ -75,33 +78,38 @@ def record(indices, seconds, exclusive=False):
             # Register cleanup as soon as the device is opened.
             stack.callback(stream.close)
             streams.append(stream)
+            if samplerate:
+                track.rate = samplerate
         started_at_unix = time.time()
         for track, stream in zip(tracks, streams):
             try:
                 stream.start()
             except sd.PortAudioError as error:
                 raise RuntimeError(f"Could not start {track.label}: {error}") from error
-        print(f"Recording for {seconds} seconds. Ambient or test sounds are sufficient.", flush=True)
-        deadline = time.monotonic() + seconds
-        while time.monotonic() < deadline and all(stream.active for stream in streams):
+        started = time.monotonic()
+        if on_started:
+            on_started()
+        while time.monotonic() - started < seconds and all(stream.active for stream in streams):
+            if stop and stop.is_set():
+                raise InterruptedError("已停止錄音")
+            if on_progress:
+                on_progress(time.monotonic() - started)
             time.sleep(0.1)
         inactive = [track.label for track, stream in zip(tracks, streams) if not stream.active]
 
+    if stop and stop.is_set():
+        raise InterruptedError("已停止錄音")
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     folder = Path(__file__).resolve().parents[1] / "runs" / f"{stamp}_mic_check"
     folder.mkdir(parents=True)
     results = [track.save(folder) for track in tracks]
-    print(folder)
     needs_review = bool(inactive)
     for result in results:
-        print(f"{result['track']} [{result['index']}] {result['device']} | "
-              f"{result['seconds']:.3f} s | peak {result['peak_pcm']}/32768 | "
-              f"PCM limits {result['at_pcm_limits']} | stream flags {result['stream_flags']}")
         needs_review |= (
             result["peak_pcm"] == 0 or result["at_pcm_limits"] > 0
             or bool(result["stream_flags"]) or result["seconds"] < seconds - 0.5
         )
-    (folder / "summary.json").write_text(json.dumps({
+    summary = {
         "requested_seconds": seconds,
         "microphone_count": len(tracks),
         "started_at_unix": started_at_unix,
@@ -109,8 +117,22 @@ def record(indices, seconds, exclusive=False):
         "inactive_streams": inactive,
         "needs_review": needs_review,
         "tracks": results,
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    if needs_review:
+    }
+    (folder / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return folder, summary
+
+
+def record(indices, seconds, exclusive=False):
+    def announce():
+        print(f"Recording for {seconds} seconds. Ambient or test sounds are sufficient.", flush=True)
+
+    folder, summary = capture_to_directory(indices, seconds, exclusive, on_started=announce)
+    print(folder)
+    for result in summary["tracks"]:
+        print(f"{result['track']} [{result['index']}] {result['device']} | "
+              f"{result['seconds']:.3f} s | peak {result['peak_pcm']}/32768 | "
+              f"PCM limits {result['at_pcm_limits']} | stream flags {result['stream_flags']}")
+    if summary["needs_review"]:
         print("Review silent, clipped, short or flagged tracks and listen to all WAVs.")
         return 1
     print("All tracks contain samples. Listen to each WAV to confirm the speech is audible.")

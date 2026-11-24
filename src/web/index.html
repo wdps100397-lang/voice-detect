@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>麥克風測試台</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></span>麥克風測試台</div>
+    <nav aria-label="測試功能">
+      <button class="nav active" data-page="speaker" aria-current="page"><span aria-hidden="true">≋</span>聲紋辨識</button>
+      <button class="nav" data-page="array"><span aria-hidden="true">⌖</span>聲源定位</button>
+    </nav>
+    <div class="device-box">
+      <span class="device-indicator"><i></i><span id="device-count">正在讀取麥克風</span></span>
+      <button id="refresh" class="quiet" data-action>重新讀取裝置</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="heading">
+      <div><h1 id="title">聲紋辨識</h1><p id="description">註冊講者、修改 ID，或用一段新錄音驗證辨識結果。</p></div>
+      <button id="save" data-action>儲存測試設定</button>
+    </div>
+    <div class="status" id="status" hidden>
+      <span id="status-message" role="status" aria-live="polite"></span>
+      <progress id="progress" max="1" hidden aria-label="錄音進度"></progress>
+      <button id="stop" hidden>停止錄音</button>
+    </div>
+    <div id="speaker" class="layout">
+      <div class="column">
+        <section class="card">
+          <h2>錄音與發話區間</h2>
+          <label>麥克風<select id="s-device"></select></label>
+          <div class="fields three">
+            <label>錄音長度（秒）<input id="s-duration" type="number" min="5" max="60"></label>
+            <label>倒數（秒）<input id="s-countdown" type="number" min="0" max="10"></label>
+            <label>錄音模式<select id="s-mode"><option>獨佔</option><option>共享</option></select></label>
+          </div>
+          <div class="buttons">
+            <button class="primary" id="s-record" data-action>開始錄音</button>
+            <label class="button file">匯入 WAV<input id="s-import" type="file" accept=".wav,audio/wav" data-action></label>
+          </div>
+          <div class="wave-box">
+            <p id="source-info">請先錄音，或匯入一個單聲道 WAV。</p>
+            <canvas id="waveform" aria-label="可拖曳選取區間的波形"></canvas>
+            <audio id="playback" controls preload="metadata" hidden></audio>
+          </div>
+          <div class="fields three">
+            <label>發話開始（秒）<input id="s-start" type="number" min="0" step="0.01" value="0"></label>
+            <label>發話結束（秒）<input id="s-end" type="number" min="0" step="0.01" placeholder="到檔尾"></label>
+            <label>數位增益（dB）<input id="s-gain" type="number" min="-24" max="24" step="0.5"></label>
+          </div>
+          <div class="buttons"><button id="add-sample" data-action>加入註冊樣本</button><button id="identify" class="primary" data-action>辨識這段錄音</button></div>
+        </section>
+        <section class="card">
+          <h2>註冊新講者</h2>
+          <p>先加入至少兩段不同的錄音。</p>
+          <ul id="samples" class="list"></ul>
+          <label>新講者 ID<input id="enroll-id" type="text" maxlength="64" placeholder="例如 voice_test_03"></label>
+          <button id="enroll" class="primary" data-action>註冊聲紋</button>
+        </section>
+      </div>
+      <div class="column">
+        <section class="card result">
+          <h2>辨識結果</h2>
+          <p class="result-value" id="recognition">等待測試</p>
+          <p id="recognition-note">錄一段新聲音，或匯入錄音後按「辨識這段錄音」。</p>
+          <div id="scores" class="scores"></div>
+          <div class="fields two">
+            <label>相似度門檻<input id="s-threshold" type="number" min="-1" max="1" step="0.01"></label>
+            <label>最低分差<input id="s-margin" type="number" min="0" max="2" step="0.01"></label>
+          </div>
+          <p>最高分和第二名的差距低於設定時，判為未知講者。</p>
+          <a id="speaker-download" hidden download="recognition.json">下載辨識結果 JSON</a>
+        </section>
+        <section class="card">
+          <h2>聲紋資料庫</h2>
+          <label>資料庫路徑<input id="s-database" type="text" spellcheck="false"></label>
+          <div class="buttons">
+            <button id="load-database" data-action>載入名單</button>
+            <button id="create-database" data-action>建立空白資料庫</button>
+          </div>
+          <div class="table-scroll"><table><thead><tr><th scope="col">講者 ID</th><th scope="col">樣本數</th><th scope="col" class="align-right">操作</th></tr></thead><tbody id="roster"></tbody></table></div>
+        </section>
+      </div>
+    </div>
+
+    <div id="array" class="layout" hidden>
+      <div class="column">
+        <section class="card">
+          <h2>麥克風與座標</h2>
+          <p>依照 A～D 的實際擺放順序選裝置。重插 Hub 後請重新確認。</p>
+          <div class="fields three">
+            <label>麥克風數量<select id="a-count"><option>3</option><option>4</option></select></label>
+            <label>取樣率（Hz）<input id="a-rate" type="number" min="8000" max="192000"></label>
+            <label>錄音模式<select id="a-mode"><option>獨佔</option><option>共享</option></select></label>
+          </div>
+          <div class="table-scroll"><table class="microphones"><thead><tr><th scope="col">孔位</th><th scope="col">WASAPI 輸入</th><th scope="col">X（m）</th><th scope="col">Y（m）</th><th scope="col">校準聲程（m）</th></tr></thead><tbody id="mics"></tbody></table></div>
+          <p>校準聲程是固定聲源到各支麥克風的距離。</p>
+          <div class="buttons">
+            <label class="check"><input id="a-measured" type="checkbox">座標已量測</label>
+            <label class="button file">匯入座標 JSON<input id="a-geometry" type="file" accept=".json,application/json" data-action></label>
+          </div>
+        </section>
+        <section class="card">
+          <h2>錄音與測試區間</h2>
+          <p>同一段錄音先播放固定的校準聲，再將聲源移到待測方向。</p>
+          <div class="fields two">
+            <label>錄音長度（秒）<input id="a-duration" type="number" min="5" max="60"></label>
+            <label>倒數（秒）<input id="a-countdown" type="number" min="0" max="10"></label>
+            <label>校準開始（秒）<input id="a-cal_start" type="number" min="0" step="0.1"></label>
+            <label>校準結束（秒）<input id="a-cal_end" type="number" min="0" step="0.1"></label>
+            <label>定位開始（秒）<input id="a-test_start" type="number" min="0" step="0.1"></label>
+            <label>定位結束（秒）<input id="a-test_end" type="number" min="0" step="0.1"></label>
+          </div>
+          <div class="buttons">
+            <button id="a-record" class="primary" data-action>開始多軌錄音</button>
+            <a href="/test-audio/broadband_30s.wav" download>沙沙聲</a>
+            <a href="/test-audio/noise_vs_sweep_29s.wav" download>沙沙聲＋掃頻</a>
+          </div>
+        </section>
+      </div>
+      <div class="column">
+        <section class="card result">
+          <h2>方位結果</h2>
+          <div class="compass"><canvas id="compass" aria-label="聲源方向方位盤"></canvas></div>
+          <p class="result-value" id="angle">等待量測</p>
+          <p id="direction-note">先準備多軌錄音，再按「校準並估算方向」。</p>
+          <div class="fields two">
+            <label>真值角度（選填）<input id="a-expected" type="number" min="-180" max="180" step="0.1"></label>
+            <label>校準外推上限（秒）<input id="a-extrapolation" type="number" min="0" step="0.1"></label>
+          </div>
+          <div class="buttons"><button id="direction" class="primary" data-action>校準並估算方向</button></div>
+          <div id="direction-downloads" class="buttons" hidden>
+            <a id="direction-download" download="direction.json">下載定位結果</a>
+            <a id="clock-download" download="clock.json">下載時間差校準</a>
+          </div>
+        </section>
+        <section class="card">
+          <h2>多軌音檔</h2>
+          <label>電腦上的 WAV 資料夾路徑<input id="track-folder" type="text" spellcheck="false" placeholder="例如 runs/測試資料夾"></label>
+          <div class="buttons">
+            <button id="load-tracks" data-action>載入資料夾</button>
+            <label class="button file">選擇 WAV<input id="import-tracks" type="file" multiple accept=".wav,audio/wav" data-action></label>
+          </div>
+          <p>音檔請命名為 A.wav、B.wav、C.wav 和 D.wav（四軌時）。</p>
+          <ul id="track-list" class="list"></ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="rename-dialog">
+    <form id="rename-form">
+      <h2>修改講者 ID</h2>
+      <p id="old-id"></p>
+      <label>新的 ID<input id="new-id" required maxlength="64" autocomplete="off"></label>
+      <div class="buttons">
+        <button type="button" id="rename-cancel">取消</button>
+        <button type="submit" class="primary">儲存新 ID</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

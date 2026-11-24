@@ -12,6 +12,8 @@ def main():
     sub.add_parser("devices", help="List audio inputs")
     sub.add_parser("configure", help="Disable USB input AGC and system effects, and match gain")
     sub.add_parser("test", help="Run local synthetic tests without recording or external services")
+    ui = sub.add_parser("ui", help="Open the local voice and direction web interface")
+    ui.add_argument("--no-browser", action="store_true", help="Print the address without opening a browser")
     live = sub.add_parser("live", help="Continuous real speaker identity worker for the ROS node")
     live.add_argument("--config", type=Path, default=ROOT / "config" / "live.json")
     capture = sub.add_parser("record", help="Record one to three separate inputs")
@@ -63,6 +65,10 @@ def main():
     for command in (enroll, identify):
         command.add_argument("--database", type=Path, default=ROOT / "data" / "speakers.json")
     args = parser.parse_args()
+    if args.command == "ui":
+        from src.webui import main as open_ui
+        open_ui(open_browser=not args.no_browser)
+        return 0
     if args.command == "live":
         from src.live import run_live
         import json

@@ -9,6 +9,11 @@ from src.common import ROOT, fingerprint, load_audio, read_json, save_json, data
 MODEL = ROOT / "models" / "voxceleb_resnet34.onnx"
 
 
+def validate_user_id(name):
+    if not name.strip() or name != name.strip() or len(name) > 64 or name == "UNKNOWN":
+        raise ValueError("Use a nonempty Project A user_id up to 64 characters, excluding UNKNOWN")
+
+
 def filterbank(audio):
     options = knf.FbankOptions()
     options.frame_opts.samp_freq = 16000
@@ -63,8 +68,7 @@ class SpeakerEngine:
         return data
 
     def enroll(self, name, files, database):
-        if not name.strip() or name != name.strip() or len(name) > 64 or name == "UNKNOWN":
-            raise ValueError("Use a nonempty Project A user_id up to 64 characters, excluding UNKNOWN")
+        validate_user_id(name)
         if len(files) < 2:
             raise ValueError("Use at least two different recordings per enrollment")
         if len({fingerprint(path) for path in files}) != len(files):
@@ -82,6 +86,20 @@ class SpeakerEngine:
             data["speakers"][name] = dict(template=template.tolist(), recordings=len(files))
             save_json(database, data)
         return dict(status="enrolled", user_id=name, recordings=len(files))
+
+    def rename(self, database, current, updated):
+        validate_user_id(updated)
+        with database_lock(database):
+            data = self.database(database)
+            speakers = data["speakers"]
+            if current not in speakers:
+                raise ValueError(f"找不到聲紋 ID：{current}")
+            if updated == current:
+                return
+            if updated in speakers:
+                raise ValueError(f"聲紋 ID 已存在：{updated}")
+            speakers[updated] = speakers.pop(current)
+            save_json(database, data)
 
     def identify(self, path, database, threshold, margin):
         data = self.database(database)
