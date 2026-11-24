@@ -18,7 +18,7 @@
 | 本機網頁測試台 | 已在 Chrome 驗證聲紋註冊、改 ID、辨識及錄音倒數取消。三軌、四軌合成音測試中，兩者皆將 45° 估為 46°。 |
 | ROS 發布節點 | 程式及套件已提供，觀測暫存與過期邏輯通過軟體測試，實際 DDS 傳輸與 Windows／WSL 程序聯動尚待部署驗收。 |
 | Project A 接收端 | 已核對的 commit 93d9bc1 只接受 source=mock，真實來源支援仍待接收端處理。 |
-| 自動測試 | 37 項通過，包含 CLI、模型推論、聲紋補樣本、三／四支校準、功能開關及故障隔離。 |
+| 自動測試 | 40 項通過，包含 CLI、模型推論、發話分段、聲紋補樣本、三／四支校準、功能開關及故障隔離。 |
 
 附帶設定預設四支、兩功能全開。devices 為空，geometry_measured 為 false，四個座標採邊長 20 公分正方形範例，校準距離也需以實測替換。部署時依啟用功能填寫裝置、幾何與真人註冊資料。
 
@@ -110,7 +110,8 @@ microphone_count 接受整數 3 或 4，省略時也預設四支。若啟用定�
 | sample_rate_hz | 48000，啟用的輸入需能開啟此格式。 |
 | array_config | config/array.json，定位用幾何檔。 |
 | database | data/speakers.json，聲紋註冊資料庫。 |
-| window_seconds | 2.5，每輪處理最近一個音窗。 |
+| window_seconds | 1.5，每輪處理最近一個音窗，可設 1.0～10 秒。即時辨識所需的語音長度是音窗的 80%，最多要求 2 秒。 |
+| speech_gap_seconds | 0.8，連續這麼久未偵測到語音就結束發話，可設 0.2～5 秒。 |
 | update_seconds | 0.5，worker 目標更新間隔，實際速度取決於推論時間。 |
 | calibration_seconds | 8，定位啟動校準長度，可設 5～30 秒。 |
 | calibration_distances_m | 四個範例 1.0，需換成校準聲源至各孔的實際公尺距離。 |
@@ -174,7 +175,7 @@ ROS 套件在 WSL 執行並管理 Windows worker。需具備 ROS 2 Humble、rclp
 
 ## ROS 輸出與接收端限制
 
-三個 Topic 均使用 std_msgs/msg/String，data 為 JSON 字串，QoS 為 reliable／volatile／depth 10。ROS 計時器每半秒發布仍在三秒有效期內的最新資料，timestamp 保留音訊觀測時間。
+三個 Topic 均使用 std_msgs/msg/String，data 為 JSON 字串，QoS 為 reliable／volatile／depth 10。ROS 計時器每半秒發布仍在三秒有效期內的最新資料。timestamp 通常是音訊觀測時間，held 狀態使用上一位最後一次有效的發話觀測時間。
 
 | Topic | 資料與條件 |
 | --- | --- |
@@ -182,7 +183,13 @@ ROS 套件在 WSL 執行並管理 Windows worker。需具備 ROS 2 Humble、rclp
 | /project_a/speaker/direction | status、azimuth_deg、可用的品質或 reason，以及 timestamp、source。無有效方向時角度為 null。 |
 | /project_a/speaker/identity | user_id、location、azimuth_deg、timestamp、source。方向需為 ok，聲紋需為 recognized、unknown 或 disabled。 |
 
-聲紋 disabled、error 或 unusable_audio 時，獨立 Topic 的 user_id 為空。定位 disabled、error、ambiguous 或 no_signal 時，獨立 Topic 的 azimuth_deg 為 null。接收端依 status 與 timestamp 判斷可用性。
+同一段發話一旦辨識成功，會沿用該講者 ID，直到連續一段時間沒有語音。兩人接話時若停頓未達設定秒數，會視為同一段。停止發話後，recognition 可繼續回報 held，表示上一位講者。下一段開始時，pending 表示語音累積中，unknown 表示相似度或分差未達門檻，兩者的 user_id 都是空字串。無可延續的講者時，安靜會回報 insufficient_speech。
+
+LLM 要採用本輪講者時，請訂閱 recognition，只在 status 為 recognized 且 timestamp 仍在三秒內時使用 user_id。收到 pending、unknown、held 或其他狀態時，清除本輪講者。held 供顯示上一位講者，合併 identity 不會將其與新的方向配對。聲紋 disabled、error 或 unusable_audio 時，獨立 Topic 的 user_id 為空。定位 disabled、error、ambiguous 或 no_signal 時，獨立 Topic 的 azimuth_deg 為 null。
+
+啟動節點後，可在 WSL 查看聲紋狀態的變化。
+
+    ros2 topic echo /project_a/speaker/recognition
 
 只開定位時，合併 Topic 可發布空 user_id 與有效角度。只開聲紋時，身分從 recognition Topic 取得。兩項關閉時，獨立 Topic 會持續回報 disabled，舊合併觀測依三秒時效過期。
 
@@ -245,7 +252,7 @@ analyze 仍需三個或四個實際 WAV 作為輸入。單檔聲紋辨識可使�
 
     .\voice.cmd test
 
-37 項軟體測試涵蓋三／四支 CLI、已知方位、時間偏移與漂移、功能四種開關組合、初始化及執行錯誤隔離、有界音訊緩衝、觀測過期、舊聲紋相容與樣本補錄，以及實際 ONNX 合成特徵推論。真人辨識率仍待驗證。
+40 項軟體測試涵蓋三／四支 CLI、已知方位、時間偏移與漂移、功能四種開關組合、初始化及執行錯誤隔離、有界音訊緩衝、觀測過期、發話分段與講者切換、舊聲紋相容與樣本補錄，以及實際 ONNX 合成特徵推論。真人辨識率仍待驗證。
 
 目前已完成軟體回歸、三支實體收音與小規模真人聲紋測試。實際 ROS 傳輸、跨機安裝、設備長時間穩定性與真人辨識率列在 [TEST_PLAN.md](TEST_PLAN.md)。live 使用固定容量滾動緩衝，持續模式的原音只保留最近一段供分析。完整長錄音需要另外加入分段寫檔或長錄音支援。
 

@@ -1,6 +1,7 @@
 """Continuous Windows acquisition and real speaker/azimuth observations."""
 from collections import deque
 from contextlib import ExitStack
+from math import gcd
 from pathlib import Path
 import threading
 import time
@@ -8,11 +9,16 @@ import time
 import numpy as np
 import sounddevice as sd
 from scipy.io import wavfile
+from scipy.signal import resample_poly
 import tempfile
 
 from src.common import ROOT, read_json
 from src.localization import fit_clock, validate_positions
 from src.features import switches, evaluate, combined_identity
+
+MIN_WINDOW_SECONDS = 1.0
+DEFAULT_WINDOW_SECONDS = 1.5
+DEFAULT_SPEECH_GAP_SECONDS = .8
 
 
 class AudioRing:
@@ -111,13 +117,21 @@ def aligned_window(snapshots, clock, rate, seconds):
 
 
 class Recognizer:
-    def __init__(self, database, threshold, margin):
+    def __init__(self, database, threshold, margin, window_seconds, speech_gap_seconds):
         if not np.isfinite([threshold, margin]).all() or not -1 <= threshold <= 1 or not 0 <= margin <= 2:
             raise ValueError("Invalid speaker threshold or margin")
         self.database = database
         self.threshold = threshold
         self.margin = margin
+        self.min_speech_seconds = min(2.0, round(window_seconds * .8, 3))
+        self.speech_gap_seconds = speech_gap_seconds
+        self.next_sample = None
+        self.turn_start = None
+        self.last_voice_end = None
+        self.confirmed = None
+        from webrtcvad import Vad
         from src.speakers import SpeakerEngine
+        self.vad = Vad(2)
         self.engine = SpeakerEngine()
         if not self.engine.database(database)["speakers"]:
             raise ValueError("Enroll Project A user IDs before starting the live node")
@@ -127,17 +141,61 @@ class Recognizer:
         with tempfile.TemporaryDirectory() as temporary:
             file = Path(temporary) / "window.wav"
             wavfile.write(file, rate, audio.astype("float32"))
-            return self.engine.identify(file, self.database, self.threshold, self.margin)
+            return self.engine.identify(file, self.database, self.threshold, self.margin,
+                                        min_speech_seconds=self.min_speech_seconds)
+
+    def has_speech(self, block, rate):
+        if rate not in (16000, 32000, 48000):
+            divisor = gcd(rate, 16000)
+            converted = resample_poly(block, 16000 // divisor, rate // divisor)
+            block = np.zeros(480)
+            block[:min(len(converted), 480)] = converted[:480]
+            rate = 16000
+        pcm = (np.clip(block, -1, .999969) * 32768).astype("<i2")
+        return self.vad.is_speech(pcm.tobytes(), rate)
+
+    def identify_window(self, audio, rate, end_sample):
+        """Latch a speaker within one continuous turn and ignore overlapping old frames."""
+        start = end_sample - len(audio)
+        frame_size = round(rate * .03)
+        gap = round(rate * self.speech_gap_seconds)
+        if self.next_sample is None or self.next_sample < start:
+            # An unobserved part of the stream might have contained a turn boundary.
+            self.next_sample = start
+            self.turn_start = self.last_voice_end = self.confirmed = None
+        for begin in range(self.next_sample, end_sample - frame_size + 1, frame_size):
+            finish = begin + frame_size
+            self.next_sample = finish
+            if self.has_speech(audio[begin - start:finish - start], rate):
+                if self.turn_start is None:
+                    self.turn_start = begin
+                self.last_voice_end = finish
+            elif self.last_voice_end is not None and finish - self.last_voice_end >= gap:
+                self.turn_start = self.last_voice_end = self.confirmed = None
+        if self.turn_start is None:
+            return dict(status="insufficient_speech", user_id=""), 0
+        offset = max(0, self.turn_start - start)
+        if self.confirmed is not None:
+            return self.confirmed, offset
+        if self.last_voice_end <= start:
+            return dict(status="pending", user_id=""), offset
+        result = self.identify(audio[offset:self.last_voice_end - start], rate)
+        if result["status"] == "recognized":
+            self.confirmed = result
+        elif result["status"] == "insufficient_speech":
+            # A new person may be speaking. Publish an empty ID until there is a score.
+            result["status"] = "pending"
+        return result, offset
 
 
 def observation(audio, rate, positions, recognizer, timestamp, now,
                 enable_speaker=True, enable_localization=True,
-                speaker_error=None, localization_error=None):
+                speaker_error=None, localization_error=None, window_end_sample=None):
     if not 0 <= now - timestamp <= 3:
         return None, dict(status="stale")
     speaker, location = evaluate(audio, rate, positions, recognizer,
                                  enable_speaker, enable_localization,
-                                 speaker_error, localization_error)
+                                 speaker_error, localization_error, window_end_sample=window_end_sample)
     if not 0 <= time.time() - timestamp <= 3:
         return None, dict(status="stale_after_inference")
     payload = combined_identity(speaker, location, timestamp)
@@ -146,7 +204,7 @@ def observation(audio, rate, positions, recognizer, timestamp, now,
         status = "observed"
     elif speaker["status"] == "error" or location["status"] == "error":
         status = "degraded"
-    elif speaker["status"] == "unusable_audio":
+    elif speaker["status"] in ("pending", "insufficient_speech", "unusable_audio"):
         status = "insufficient_speech"
     return payload, dict(status=status, direction=location, recognition=speaker)
 
@@ -168,6 +226,11 @@ def run_live(config_path, emit, stop=None):
     interval = float(config.get("update_seconds", .5))
     if not np.isfinite(interval) or interval < .1:
         raise ValueError("update_seconds must be finite and at least 0.1")
+    window = DEFAULT_WINDOW_SECONDS
+    if enable_speaker or enable_localization:
+        window = float(config.get("window_seconds", DEFAULT_WINDOW_SECONDS))
+        if not MIN_WINDOW_SECONDS <= window <= 10:
+            raise ValueError(f"window_seconds must be between {MIN_WINDOW_SECONDS:g} and 10")
     positions, recognizer = None, None
     speaker_error, localization_error = None, None
     if enable_localization:
@@ -180,8 +243,11 @@ def run_live(config_path, emit, stop=None):
             localization_error = str(error)
     if enable_speaker:
         try:
+            speech_gap = float(config.get("speech_gap_seconds", DEFAULT_SPEECH_GAP_SECONDS))
+            if not .2 <= speech_gap <= 5:
+                raise ValueError("speech_gap_seconds must be between 0.2 and 5")
             recognizer = Recognizer(ROOT / config["database"], config.get("threshold", .65),
-                                    config.get("margin", .08))
+                                    config.get("margin", .08), window, speech_gap)
         except Exception as error:
             speaker_error = str(error)
     idle_features = dict(
@@ -196,11 +262,10 @@ def run_live(config_path, emit, stop=None):
             time.sleep(interval)
         return
     rate = int(config.get("sample_rate_hz", 48000))
-    window = float(config.get("window_seconds", 2.5))
     duration = float(config.get("calibration_seconds", 8)) if positions is not None else 0
     max_age = float(config.get("max_clock_age_seconds", 0)) if positions is not None else 0
-    if not np.isfinite([rate, window, duration, max_age]).all() or rate < 16000 or not 2.1 <= window <= 10 or max_age < 0:
-        raise ValueError("Invalid sample rate, analysis window or clock age")
+    if not np.isfinite([rate, duration, max_age]).all() or rate < 16000 or max_age < 0:
+        raise ValueError("Invalid sample rate or clock age")
     if positions is not None and not 5 <= duration <= 30:
         raise ValueError("calibration_seconds must be between 5 and 30")
     required = count if positions is not None else 1
@@ -247,7 +312,8 @@ def run_live(config_path, emit, stop=None):
                 timestamp = capture.started_at + end
                 payload, diagnostics = observation(
                     audio, rate, positions, recognizer, timestamp, time.time(),
-                    enable_speaker, enable_localization, speaker_error, window_localization_error)
+                    enable_speaker, enable_localization, speaker_error, window_localization_error,
+                    window_end_sample=round(end * rate))
                 if payload is not None:
                     emit(dict(kind="identity", data=payload))
                 if not diagnostics["status"].startswith("stale"):

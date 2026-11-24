@@ -73,7 +73,7 @@ class FeatureModeTests(unittest.TestCase):
         capture.started_at = 100.
         capture.snapshots.return_value = [(0, np.zeros(16000 * 3))]
         recognizer = Mock()
-        recognizer.identify.return_value = dict(status="recognized", user_id="U_A")
+        recognizer.identify_window.return_value = (dict(status="recognized", user_id="U_A"), 0)
         with patch("src.live.read_json", return_value=config) as read, patch("src.live.LiveCapture") as cls, patch("src.live.Recognizer", return_value=recognizer), patch("src.live.fit_clock") as clock, patch("src.live.time.time", return_value=103.), patch("src.live.time.sleep"):
             cls.return_value.__enter__.return_value = capture
             run_live("config.json", events.append, Mock(side_effect=[False, True]))
@@ -123,7 +123,7 @@ class FeatureModeTests(unittest.TestCase):
         capture.started_at = 100.
         capture.snapshots.return_value = [(0, np.zeros(48000))]
         recognizer = Mock()
-        recognizer.identify.return_value = dict(status="recognized", user_id="U_A")
+        recognizer.identify_window.return_value = (dict(status="recognized", user_id="U_A"), 0)
         events = []
         with patch("src.live.read_json", side_effect=[config, FileNotFoundError("missing geometry")]), patch("src.live.LiveCapture") as cls, patch("src.live.Recognizer", return_value=recognizer), patch("src.live.time.time", return_value=103.), patch("src.live.time.sleep"):
             cls.return_value.__enter__.return_value = capture
@@ -141,7 +141,7 @@ class FeatureModeTests(unittest.TestCase):
         capture.started_at = 100.
         capture.snapshots.return_value = [(0, np.zeros(16000 * 9))] * 3
         recognizer = Mock()
-        recognizer.identify.return_value = dict(status="recognized", user_id="U_A")
+        recognizer.identify_window.return_value = (dict(status="recognized", user_id="U_A"), 0)
         events = []
         with patch("src.live.read_json", side_effect=[config, geometry]), patch("src.live.LiveCapture") as cls, patch("src.live.Recognizer", return_value=recognizer), patch("src.live.fit_clock", side_effect=ValueError("bad calibration")), patch("src.live.time.time", return_value=109.), patch("src.live.time.sleep"):
             cls.return_value.__enter__.return_value = capture
@@ -177,7 +177,7 @@ class FeatureModeTests(unittest.TestCase):
         capture.started_at = 100.
         capture.snapshots.return_value = [(0, np.zeros(16000 * 9))] * 3
         recognizer = Mock()
-        recognizer.identify.return_value = dict(status="recognized", user_id="U_A")
+        recognizer.identify_window.return_value = (dict(status="recognized", user_id="U_A"), 0)
         events = []
         with patch("src.live.read_json", side_effect=[config, geometry]), patch("src.live.LiveCapture") as cls, patch("src.live.Recognizer", return_value=recognizer), patch("src.live.fit_clock", return_value={"channels": []}), patch("src.live.aligned_window", return_value=None), patch("src.live.time.time", return_value=109.), patch("src.live.time.sleep"):
             cls.return_value.__enter__.return_value = capture

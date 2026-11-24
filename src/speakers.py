@@ -28,14 +28,21 @@ def filterbank(audio):
     return features - features.mean(axis=0)
 
 
-def speech_audio(audio, rate=16000):
+class InsufficientSpeech(ValueError):
+    def __init__(self, detected_seconds, required_seconds):
+        self.detected_seconds = detected_seconds
+        super().__init__(f"Need at least {required_seconds:g} seconds of detected speech")
+
+
+def speech_audio(audio, rate=16000, *, min_speech_seconds=2.0):
     pcm = (np.clip(audio, -1, .999969) * 32768).astype("<i2")
     vad = webrtcvad.Vad(2)
     size = rate * 30 // 1000
     frames = [audio[i:i+size] for i in range(0, len(audio)-size+1, size)
               if vad.is_speech(pcm[i:i+size].tobytes(), rate)]
-    if not frames or len(frames) * .03 < 2:
-        raise ValueError("Need at least 2 seconds of detected speech")
+    detected = round(len(frames) * .03, 2)
+    if not frames or detected < min_speech_seconds:
+        raise InsufficientSpeech(detected, min_speech_seconds)
     return np.concatenate(frames)
 
 
@@ -49,11 +56,11 @@ class SpeakerEngine:
         self.session = ort.InferenceSession(str(model), sess_options=options,
                                            providers=["CPUExecutionProvider"])
 
-    def embedding(self, path):
+    def embedding(self, path, *, min_speech_seconds=2.0):
         _, audio = load_audio(path, 16000)
         if np.max(abs(audio)) >= .999:
             raise ValueError("Clipped audio. Reduce input gain and record again.")
-        audio = speech_audio(audio)
+        audio = speech_audio(audio, min_speech_seconds=min_speech_seconds)
         features = filterbank(audio)
         embedding = self.session.run(None, {self.session.get_inputs()[0].name: features[None]})[0].reshape(-1)
         norm = np.linalg.norm(embedding)
@@ -129,12 +136,20 @@ class SpeakerEngine:
             speakers[updated] = speakers.pop(current)
             save_json(database, data)
 
-    def identify(self, path, database, threshold, margin):
+    def identify(self, path, database, threshold, margin, *, min_speech_seconds=None):
         data = self.database(database)
         if not data["speakers"]:
             raise ValueError("Enroll speakers first")
         try:
-            embedding = self.embedding(path)
+            if min_speech_seconds is None:
+                embedding = self.embedding(path)
+            else:
+                embedding = self.embedding(path, min_speech_seconds=min_speech_seconds)
+        except InsufficientSpeech as error:
+            if min_speech_seconds is None:
+                return dict(status="unusable_audio", user_id="", reason=str(error))
+            return dict(status="insufficient_speech", user_id="", reason=str(error),
+                        detected_speech_seconds=error.detected_seconds)
         except ValueError as error:
             return dict(status="unusable_audio", user_id="", reason=str(error))
         scores = sorted(((name, float(embedding @ np.array(row["template"])))
