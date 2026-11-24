@@ -18,7 +18,7 @@
 | 本機網頁測試台 | 已在 Chrome 驗證聲紋註冊、改 ID、辨識及錄音倒數取消。三軌、四軌合成音測試中，兩者皆將 45° 估為 46°。 |
 | ROS 發布節點 | 程式及套件已提供，觀測暫存與過期邏輯通過軟體測試，實際 DDS 傳輸與 Windows／WSL 程序聯動尚待部署驗收。 |
 | Project A 接收端 | LLM 只訂閱 identity。部署前需確認接收端接受 source=voice_detect 與空方位角，實際整合待驗收。 |
-| 自動測試 | 40 項通過，包含 CLI、模型推論、發話分段、聲紋補樣本、三／四支校準、功能開關及故障隔離。 |
+| 自動測試 | 41 項通過，包含 CLI、模型推論、發話分段、聲紋補樣本、三／四支校準、功能開關及故障隔離。 |
 
 附帶設定預設四支、兩功能全開。devices 為空，geometry_measured 為 false，四個座標採邊長 20 公分正方形範例，校準距離也需以實測替換。部署時依啟用功能填寫裝置、幾何與真人註冊資料。
 
@@ -63,7 +63,7 @@ PowerShell 中使用 .\setup.cmd 與 .\voice.cmd test。setup.cmd 建立 .venv-a
       schemas/                   agent/input 與合併身分 JSON 欄位契約
       tests/                     軟體回歸測試
       MI-305_CAD/                麥克風與支架 CAD
-      TEST_PLAN.md               已測結果與後續驗收項目
+      TEST_PLAN.md               現場收音、定位與 LLM 串接驗收
 
 mic_check.py 和 audio_controls.py 保留為早期操作入口。
 
@@ -110,8 +110,9 @@ microphone_count 接受整數 3 或 4，省略時也預設四支。若啟用定�
 | sample_rate_hz | 48000，啟用的輸入需能開啟此格式。 |
 | array_config | config/array.json，定位用幾何檔。 |
 | database | data/speakers.json，聲紋註冊資料庫。 |
-| window_seconds | 1.5，每輪處理最近一個音窗，可設 1.0～10 秒。即時辨識所需的語音長度是音窗的 80%，最多要求 2 秒。 |
+| window_seconds | 1.5，每輪處理最近一個音窗，可設 1.0～10 秒。即時辨識所需的語音長度是音窗的 80%，最多要求 2 秒。同一段發話會跨音窗累積有效語音，預設要累積 1.2 秒。 |
 | speech_gap_seconds | 0.8，連續這麼久未偵測到語音就結束發話，可設 0.2～5 秒。 |
+| vad_mode | 1，WebRTC 語音偵測嚴格度，可設 0～3。模式 1 讓較弱的語音容易被計入。現場背景聲常被誤判為語音時，可試模式 2。修改後重啟節點。 |
 | update_seconds | 0.5，worker 目標更新間隔，實際速度取決於推論時間。 |
 | calibration_seconds | 8，定位啟動校準長度，可設 5～30 秒。 |
 | calibration_distances_m | 四個範例 1.0，需換成校準聲源至各孔的實際公尺距離。 |
@@ -193,6 +194,8 @@ LLM 只需訂閱 identity，以最新且三秒內的觀測決定講者。收到�
 
 聲紋狀態可透過 recognition 查看。held 表示上一位講者。聲紋 disabled、error 或 unusable_audio 時，recognition 的 user_id 為空。定位 disabled、error、ambiguous 或 no_signal 時，direction 的 azimuth_deg 為 null。兩項關閉時，identity 持續發布空 ID 與 null 角度。
 
+如果辨識一直顯示 pending，可用 `ros2 topic echo /project_a/speaker/recognition` 比對 `input_rms_dbfs`（A 軌近期平均音量）、`detected_speech_seconds`（本段已累積的辨識樣本秒數）和 `required_speech_seconds`（開始比對所需秒數）。有分數卻判 unknown 時，再查看聲紋的相似度和分差。
+
 Project A 接收端需支援 source=voice_detect，以及 azimuth_deg 為 [-180, 180] 內的數字或 null。公開的 feature/live-dialogue-monitor 分支仍只接受 source=mock 與有限角度。部署時請確認實際版本支援上述欄位。
 
 use_speaker_identity=true 時，以文字提交當下三秒內的最新觀測決定當輪身分，音訊片段的精確配對仍待整合。角度相對於麥克風陣列，location 保留空字串。交付區與手臂座標由後續系統定義。
@@ -249,9 +252,9 @@ analyze 仍需三個或四個實際 WAV 作為輸入。單檔聲紋辨識可使�
 
     .\voice.cmd test
 
-40 項軟體測試涵蓋三／四支 CLI、已知方位、時間偏移與漂移、功能四種開關組合、初始化及執行錯誤隔離、有界音訊緩衝、觀測過期、發話分段與講者切換、舊聲紋相容與樣本補錄，以及實際 ONNX 合成特徵推論。真人辨識率仍待驗證。
+41 項軟體測試涵蓋三／四支 CLI、已知方位、時間偏移與漂移、功能四種開關組合、初始化及執行錯誤隔離、有界音訊緩衝、觀測過期、有效語音累積、發話分段與講者切換、舊聲紋相容與樣本補錄，以及實際 ONNX 合成特徵推論。真人辨識率仍待驗證。
 
-目前已完成軟體回歸、三支實體收音與小規模真人聲紋測試。實際 ROS 傳輸、跨機安裝、設備長時間穩定性與真人辨識率列在 [TEST_PLAN.md](TEST_PLAN.md)。live 使用固定容量滾動緩衝，持續模式的原音只保留最近一段供分析。完整長錄音需要另外加入分段寫檔或長錄音支援。
+目前已完成軟體回歸、三支實體收音與小規模真人聲紋測試。實際收音、定位與 LLM 串接的驗收步驟見 [TEST_PLAN.md](TEST_PLAN.md)。live 使用固定容量滾動緩衝，持續模式的原音只保留最近一段供分析。完整長錄音需要另外加入分段寫檔或長錄音支援。
 
 ## 模型及參考來源
 

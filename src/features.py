@@ -11,7 +11,7 @@ def switches(config):
 
 
 def evaluate(audio, rate, positions, recognizer, enable_speaker=True, enable_localization=True,
-             speaker_error=None, localization_error=None, *, window_end_sample=None):
+             speaker_error=None, localization_error=None, *, window_end_sample=None, speaker_history=None):
     recognition = dict(status="disabled", user_id="")
     location = dict(status="disabled", azimuth_deg=None)
     if enable_speaker:
@@ -21,7 +21,8 @@ def evaluate(audio, rate, positions, recognizer, enable_speaker=True, enable_loc
             if window_end_sample is None:
                 recognition = recognizer.identify(audio[0], rate)
             else:
-                recognition, start = recognizer.identify_window(audio[0], rate, window_end_sample)
+                recognition, start = recognizer.identify_window(audio[0], rate, window_end_sample,
+                                                                 history=speaker_history)
                 if start:
                     audio = [track[start:] for track in audio]
         except Exception as error:

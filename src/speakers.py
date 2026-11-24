@@ -1,8 +1,11 @@
 """WeSpeaker embeddings with WebRTC VAD and a local enrollment database."""
+from math import gcd
+
 import numpy as np
 import kaldi_native_fbank as knf
 import onnxruntime as ort
 import webrtcvad
+from scipy.signal import resample_poly
 
 from src.common import ROOT, fingerprint, load_audio, read_json, save_json, database_lock
 
@@ -61,6 +64,9 @@ class SpeakerEngine:
         if np.max(abs(audio)) >= .999:
             raise ValueError("Clipped audio. Reduce input gain and record again.")
         audio = speech_audio(audio, min_speech_seconds=min_speech_seconds)
+        return self.embedding_from_speech(audio)
+
+    def embedding_from_speech(self, audio):
         features = filterbank(audio)
         embedding = self.session.run(None, {self.session.get_inputs()[0].name: features[None]})[0].reshape(-1)
         norm = np.linalg.norm(embedding)
@@ -152,6 +158,26 @@ class SpeakerEngine:
                         detected_speech_seconds=error.detected_seconds)
         except ValueError as error:
             return dict(status="unusable_audio", user_id="", reason=str(error))
+        return self.match_embedding(embedding, data, threshold, margin)
+
+    def identify_speech(self, audio, rate, database, threshold, margin):
+        """Score frames already selected by the live voice activity detector."""
+        data = self.database(database)
+        if not data["speakers"]:
+            raise ValueError("Enroll speakers first")
+        if np.max(abs(audio)) >= .999:
+            return dict(status="unusable_audio", user_id="", reason="Clipped audio")
+        if rate != 16000:
+            divisor = gcd(rate, 16000)
+            audio = resample_poly(audio, 16000 // divisor, rate // divisor)
+        try:
+            embedding = self.embedding_from_speech(audio)
+        except ValueError as error:
+            return dict(status="unusable_audio", user_id="", reason=str(error))
+        return self.match_embedding(embedding, data, threshold, margin)
+
+    @staticmethod
+    def match_embedding(embedding, data, threshold, margin):
         scores = sorted(((name, float(embedding @ np.array(row["template"])))
                          for name, row in data["speakers"].items()), key=lambda row: row[1], reverse=True)
         best_name, best_score = scores[0]

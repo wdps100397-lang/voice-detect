@@ -8,6 +8,7 @@
   "database": "data/speakers.json",
   "window_seconds": 1.5,
   "speech_gap_seconds": 0.8,
+  "vad_mode": 1,
   "update_seconds": 0.5,
   "calibration_seconds": 8,
   "calibration_distances_m": [1.0, 1.0, 1.0, 1.0],

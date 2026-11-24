@@ -19,6 +19,7 @@ from src.features import switches, evaluate, combined_identity
 MIN_WINDOW_SECONDS = 1.0
 DEFAULT_WINDOW_SECONDS = 1.5
 DEFAULT_SPEECH_GAP_SECONDS = .8
+DEFAULT_VAD_MODE = 1
 
 
 class AudioRing:
@@ -117,9 +118,12 @@ def aligned_window(snapshots, clock, rate, seconds):
 
 
 class Recognizer:
-    def __init__(self, database, threshold, margin, window_seconds, speech_gap_seconds):
+    def __init__(self, database, threshold, margin, window_seconds, speech_gap_seconds, *,
+                 vad_mode=DEFAULT_VAD_MODE):
         if not np.isfinite([threshold, margin]).all() or not -1 <= threshold <= 1 or not 0 <= margin <= 2:
             raise ValueError("Invalid speaker threshold or margin")
+        if type(vad_mode) is not int or not 0 <= vad_mode <= 3:
+            raise ValueError("vad_mode must be an integer from 0 to 3")
         self.database = database
         self.threshold = threshold
         self.margin = margin
@@ -128,10 +132,12 @@ class Recognizer:
         self.next_sample = None
         self.turn_start = None
         self.last_voice_end = None
-        self.confirmed = None
+        # Keep up to three seconds of voiced frames for the current turn.
+        self.voiced_frames = deque(maxlen=100)
+        self.turn_result = None
         from webrtcvad import Vad
         from src.speakers import SpeakerEngine
-        self.vad = Vad(2)
+        self.vad = Vad(vad_mode)
         self.engine = SpeakerEngine()
         if not self.engine.database(database)["speakers"]:
             raise ValueError("Enroll Project A user IDs before starting the live node")
@@ -154,48 +160,61 @@ class Recognizer:
         pcm = (np.clip(block, -1, .999969) * 32768).astype("<i2")
         return self.vad.is_speech(pcm.tobytes(), rate)
 
-    def identify_window(self, audio, rate, end_sample):
-        """Latch a speaker within one continuous turn and ignore overlapping old frames."""
-        start = end_sample - len(audio)
+    def reset_turn(self):
+        self.turn_start = self.last_voice_end = self.turn_result = None
+        self.voiced_frames.clear()
+
+    def identify_window(self, audio, rate, end_sample, *, history=None):
+        """Accumulate new voiced frames until a pause ends the turn."""
+        window_start = end_sample - len(audio)
+        buffered = history if history is not None else audio
+        start = end_sample - len(buffered)
         frame_size = round(rate * .03)
         gap = round(rate * self.speech_gap_seconds)
-        if self.next_sample is None or self.next_sample < start:
-            # An unobserved part of the stream might have contained a turn boundary.
+        if self.next_sample is None:
+            self.next_sample = max(start, window_start)
+        elif self.next_sample < start:
             self.next_sample = start
-            self.turn_start = self.last_voice_end = self.confirmed = None
+            self.reset_turn()
         for begin in range(self.next_sample, end_sample - frame_size + 1, frame_size):
             finish = begin + frame_size
             self.next_sample = finish
-            if self.has_speech(audio[begin - start:finish - start], rate):
+            block = buffered[begin - start:finish - start]
+            if self.has_speech(block, rate):
                 if self.turn_start is None:
                     self.turn_start = begin
                 self.last_voice_end = finish
+                if self.turn_result is None or self.turn_result["status"] != "recognized":
+                    self.voiced_frames.append(block.copy())
+                    self.turn_result = None
             elif self.last_voice_end is not None and finish - self.last_voice_end >= gap:
-                self.turn_start = self.last_voice_end = self.confirmed = None
+                self.reset_turn()
         if self.turn_start is None:
-            return dict(status="insufficient_speech", user_id=""), 0
-        offset = max(0, self.turn_start - start)
-        if self.confirmed is not None:
-            return self.confirmed, offset
-        if self.last_voice_end <= start:
-            return dict(status="pending", user_id=""), offset
-        result = self.identify(audio[offset:self.last_voice_end - start], rate)
-        if result["status"] == "recognized":
-            self.confirmed = result
-        elif result["status"] == "insufficient_speech":
-            # A new person may be speaking. Publish an empty ID until there is a score.
-            result["status"] = "pending"
-        return result, offset
+            return dict(status="insufficient_speech", user_id="", detected_speech_seconds=0.), 0
+        offset = max(0, self.turn_start - window_start)
+        detected = round(len(self.voiced_frames) * frame_size / rate, 3)
+        if detected < self.min_speech_seconds:
+            return dict(status="pending", user_id="", detected_speech_seconds=detected,
+                        required_speech_seconds=self.min_speech_seconds), offset
+        if self.turn_result is None:
+            result = self.engine.identify_speech(np.concatenate(self.voiced_frames), rate,
+                                                 self.database, self.threshold, self.margin)
+            self.turn_result = dict(result, detected_speech_seconds=detected)
+        return self.turn_result, offset
 
 
 def observation(audio, rate, positions, recognizer, timestamp, now,
                 enable_speaker=True, enable_localization=True,
-                speaker_error=None, localization_error=None, window_end_sample=None):
+                speaker_error=None, localization_error=None, window_end_sample=None, speaker_history=None):
     if not 0 <= now - timestamp <= 3:
         return None, dict(status="stale")
     speaker, location = evaluate(audio, rate, positions, recognizer,
                                  enable_speaker, enable_localization,
-                                 speaker_error, localization_error, window_end_sample=window_end_sample)
+                                 speaker_error, localization_error, window_end_sample=window_end_sample,
+                                 speaker_history=speaker_history)
+    if "detected_speech_seconds" in speaker and len(audio[0]):
+        power = np.mean(np.square(audio[0]))
+        speaker = dict(speaker, input_rms_dbfs=round(10 * np.log10(max(power, 1e-12)), 1))
     if not 0 <= time.time() - timestamp <= 3:
         return None, dict(status="stale_after_inference")
     payload = combined_identity(speaker, location, timestamp)
@@ -247,7 +266,8 @@ def run_live(config_path, emit, stop=None):
             if not .2 <= speech_gap <= 5:
                 raise ValueError("speech_gap_seconds must be between 0.2 and 5")
             recognizer = Recognizer(ROOT / config["database"], config.get("threshold", .65),
-                                    config.get("margin", .08), window, speech_gap)
+                                    config.get("margin", .08), window, speech_gap,
+                                    vad_mode=config.get("vad_mode", DEFAULT_VAD_MODE))
         except Exception as error:
             speaker_error = str(error)
     idle_features = dict(
@@ -310,10 +330,15 @@ def run_live(config_path, emit, stop=None):
                 if max_age and clock is not None and end > duration + max_age:
                     window_localization_error = "Clock calibration validity expired; restart to recalibrate"
                 timestamp = capture.started_at + end
+                end_sample = round(end * rate)
+                start_a, audio_a = snapshots[0]
+                # Recover unprocessed frames outside the direction window, excluding calibration.
+                first = max(start_a, round(duration * rate))
+                history = audio_a[first - start_a:max(first, end_sample) - start_a]
                 payload, diagnostics = observation(
                     audio, rate, positions, recognizer, timestamp, time.time(),
                     enable_speaker, enable_localization, speaker_error, window_localization_error,
-                    window_end_sample=round(end * rate))
+                    window_end_sample=end_sample, speaker_history=history)
                 if payload is not None:
                     emit(dict(kind="identity", data=payload))
                 if not diagnostics["status"].startswith("stale"):

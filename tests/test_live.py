@@ -88,12 +88,11 @@ class LiveTests(unittest.TestCase):
             engine.return_value.database.return_value = {"speakers": {"U_A": {}, "U_B": {}}}
             recognizer = Recognizer(Path("db.json"), .65, .08, 1.5, .8)
         recognizer.has_speech = lambda frame, rate: frame[0] != 0
-        recognizer.identify = Mock(side_effect=[
+        recognizer.engine.identify_speech.side_effect = [
             dict(status="recognized", user_id="U_A"),
-            dict(status="insufficient_speech", user_id=""),
             dict(status="unknown", user_id=""),
             dict(status="recognized", user_id="U_B"),
-        ])
+        ]
         self.assertEqual(recognizer.min_speech_seconds, 1.2)
         rate, frame = 16000, 480
         captured = []
@@ -106,14 +105,38 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(observe(1, 45)[0]["user_id"], "U_A")
         self.assertEqual(observe(0, 10)[0]["user_id"], "U_A")
         self.assertEqual(observe(2, 10)[0]["user_id"], "U_A")
-        self.assertEqual(recognizer.identify.call_count, 1)
+        self.assertEqual(recognizer.engine.identify_speech.call_count, 1)
         self.assertEqual(observe(0, 28)[0]["status"], "insufficient_speech")
         result, offset = observe(2, 10)
-        self.assertEqual(result, dict(status="pending", user_id=""))
+        self.assertEqual(result["status"], "pending")
+        self.assertEqual(result["detected_speech_seconds"], .3)
         self.assertGreater(offset, 0)
-        np.testing.assert_array_equal(recognizer.identify.call_args.args[0], np.full(frame * 10, 2))
         self.assertEqual(observe(2, 30)[0]["status"], "unknown")
+        np.testing.assert_array_equal(recognizer.engine.identify_speech.call_args.args[0],
+                                      np.full(frame * 40, 2))
         self.assertEqual(observe(2, 10)[0]["user_id"], "U_B")
+
+    def test_sparse_speech_accumulates_across_windows_with_short_pauses(self):
+        with patch("src.speakers.SpeakerEngine") as engine, patch("webrtcvad.Vad") as vad:
+            engine.return_value.database.return_value = {"speakers": {"U_A": {}}}
+            recognizer = Recognizer(Path("db.json"), .65, .08, 1.5, .8, vad_mode=1)
+        vad.assert_called_once_with(1)
+        recognizer.has_speech = lambda block, rate: block[0] != 0
+        recognizer.engine.identify_speech.return_value = dict(status="recognized", user_id="U_A")
+        rate = 16000
+        # 0.45 seconds of voice separated by pauses shorter than the configured gap.
+        audio = np.tile(np.r_[np.full(7200, .1), np.zeros(7200)], 3)
+        for end, detected in [(16000, .54), (32000, 1.08), (43200, 1.35)]:
+            window = audio[max(0, end - rate):end]
+            result, _ = recognizer.identify_window(window, rate, end, history=audio[:end])
+            self.assertEqual(result["detected_speech_seconds"], detected)
+            if detected < 1.2:
+                self.assertEqual(result["status"], "pending")
+                recognizer.engine.identify_speech.assert_not_called()
+        self.assertEqual(result["user_id"], "U_A")
+        recognizer.engine.identify_speech.assert_called_once()
+        np.testing.assert_array_equal(recognizer.engine.identify_speech.call_args.args[0],
+                                      np.full(21600, .1))
 
     def test_held_speaker_is_old_and_unknown_clears_it(self):
         mailbox = ros_module.FeatureMailbox()
