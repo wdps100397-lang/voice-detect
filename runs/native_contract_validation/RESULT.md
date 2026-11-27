@@ -1,5 +1,8 @@
 # Project A 原生格式核對
 
+> 現況註記（2026-11-27）：以下保留本場次的歷史結果、測試數與裝置編號，不代表目前部署狀態。最新軟體回歸為 49 項通過；四支桌面錄音已確認時間跳變，256 點補償仍未達到可靠角度精度，共享 RAW 長時間聲學驗證及 ROS／LLM 整合尚待完成。最新設定與證據請看根目錄 PROJECT_HANDOFF.md 和 runs/README.md。
+
+
 2026-11-23 使用既有合成三軌，從 voice.cmd analyze 正式入口產生 analysis.json、identity.json、input.json。外部 STT 文字為手動建立的測試字串，timestamp=1000 為歷史測試時間，整輪未錄製真人語音。
 
 - 定位直接輸出 azimuth_deg，已將基礎演算法改為前方 0、左正右負。

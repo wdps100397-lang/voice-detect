@@ -1,6 +1,6 @@
 # 四支 USB 麥克風定位與聲紋辨識（可切換三支）
 
-更新日期為 2026-11-25。
+更新日期為 2026-11-27。新接手請先閱讀 [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md)。目前首要問題是四路錄音時間跳變。
 
 此專案提供聲紋辨識、三維聲源方向估計，以及 Project A 的 ROS 2 發布節點。麥克風數量可設定為三支或四支，聲紋與定位各自可開關。Windows 負責 USB 收音與模型推論，WSL 的 ROS 節點管理辨識程序並發布結果。外部 STT 負責產生文字。
 
@@ -12,8 +12,9 @@
 | 獨立功能開關 | 兩項全開、只開聲紋、只開定位、兩項全關均通過軟體測試。 |
 | 功能錯誤隔離 | 模型初始化、幾何設定、校準、推論及對齊失敗的測試，確認其他可用功能可繼續輸出。 |
 | 三支實體 MI-305 | 2026-11-22 完成一分鐘同錄與手機測試聲對照，三軌收到樣本，串流未回報溢位或中斷。 |
-| 四支實體麥克風 | 尚待驗證。 |
-| 實體方向精度、長時間漂移 | 尚待量測，合成測試的角度結果屬於軟體驗證。 |
+| 四支實體麥克風 | 已多輪實錄；11/25 查到 A 直插、B/C/D 經 Hub，均屬同一 USB 控制器，換接法後須重查。 |
+| 實體方向精度、長時間漂移 | 未通過。固定聲源約 17.25 秒起出現 256 點跳變，48 kHz 下為 5.33 ms；裝置時間和旗標未反映。補償後最大名義角度偏差仍約 15°。 |
+| 新錄音路徑 | shared RAW、可調緩衝與 MMCSS 已接入 CLI／live；診斷程式四支開啟兩秒成功，正式入口硬體及長時間聲學驗證尚待完成。 |
 | 真人聲紋 | 已用單支 USB 麥克風註冊兩位講者，兩位的新錄音都成功辨識。另有一段測試音判為未知，一次盲測在選取發話區間後辨識正確。真人辨識率與 0.65／0.08 門檻仍待更多樣本驗證。 |
 | 本機網頁測試台 | 已在 Chrome 驗證聲紋註冊、改 ID、辨識及錄音倒數取消。三軌、四軌合成音測試中，兩者皆將 45° 估為 46°。 |
 | ROS 發布節點 | 程式及套件已提供，觀測暫存與過期邏輯通過軟體測試，實際 DDS 傳輸與 Windows／WSL 程序聯動尚待部署驗收。 |
@@ -28,12 +29,14 @@
 
     git clone https://github.com/wdps100397-lang/voice-detect.git
     cd voice-detect
+    git lfs install
+    git lfs pull
     setup.cmd
     voice.cmd test
 
 PowerShell 中使用 .\setup.cmd 與 .\voice.cmd test。setup.cmd 建立 .venv-audio、安裝固定版本依賴並驗證模型雜湊。Repository 已包含模型檔案，檔案缺少或雜湊不符時會重新下載。
 
-程式的預設路徑以專案位置計算。換電腦時重新建立 Python 環境，重新確認裝置編號與實體 A/B/C/D 對應。runs 保存本機錄音及結果，data 保存真人註冊資料，兩者由各使用環境自行保存。
+程式的預設路徑以專案位置計算。換電腦時重新建立 Python 環境，重新確認裝置編號與實體 A/B/C/D 對應。runs 和 data 已納入 GitHub，114 個 WAV 使用 Git LFS 儲存。新資料仍須 commit／push；虛擬環境、快取、密鑰和執行中鎖檔不納入。
 
 ## 專案結構
 
@@ -45,6 +48,7 @@ PowerShell 中使用 .\setup.cmd 與 .\voice.cmd test。setup.cmd 建立 .venv-a
       requirements.txt           固定版本依賴
       src/
         capture.py               一至四個輸入的分軌錄音
+        audio_transport.py       錄音模式、原生共享 RAW 與時間標記
         hardware.py              三／四個 USB 輸入的 AGC 與增益設定
         localization.py          三／四軌時間校準與左正右負方位
         speakers.py              以 Project A user_id 註冊與辨識
@@ -100,13 +104,15 @@ microphone_count 接受整數 3 或 4，省略時也預設四支。若啟用定�
 | false | true | 使用 N 支收音與校準，跳過聲紋模型、資料庫與註冊檢查。 |
 | false | false | 保持節點待命，定期輸出兩項 disabled 狀態，收音與模型保持關閉。 |
 
-初始化或推論錯誤記為對應功能的 error，其他可用功能繼續運作。初始化設定修正後重啟節點可重新載入。持續收音使用 WASAPI 獨佔模式。若設備斷線或串流溢位，worker 會結束並提供錯誤訊息，ROS 節點也會停止，需要修正設備後重新啟動。
+初始化或推論錯誤記為對應功能的 error，其他可用功能繼續運作。初始化設定修正後重啟節點可重新載入。持續收音預設使用 WASAPI 獨佔模式；可透過 capture_mode 選用其他已實作的錄音路徑。若設備斷線或串流溢位，worker 會結束並提供錯誤訊息，ROS 節點也會停止，需要修正設備後重新啟動。
 
 ### 其他即時設定
 
 | 欄位 | 預設值與用途 |
 | --- | --- |
-| devices | 空陣列，部署時填入 WASAPI 編號，依實體 A/B/C/D 排序。 |
+| devices | 本機快照 [36,35,33,30]，依 A/B/C/D 排序；重新插拔或部署前重新核對。 |
+| capture_mode | 省略為 exclusive；另支援 shared、shared_raw。shared_raw 尚未通過定位穩定性驗收。 |
+| capture_latency_seconds | 選填 0.02～0.5 秒；shared_raw 省略時採 0.1 秒。緩衝變大能否改善跳變仍待測。 |
 | sample_rate_hz | 48000，啟用的輸入需能開啟此格式。 |
 | array_config | config/array.json，定位用幾何檔。 |
 | database | data/speakers.json，聲紋註冊資料庫。 |
@@ -131,7 +137,7 @@ max_clock_age_seconds=0 代表停用時間上限檢查。長時間時鐘模型�
 
     .\voice.cmd configure
 
-configure 處理當時偵測到的三個或四個 USBAudio2.0 輸入，固定增益採第一個端點的現有值，設定前後紀錄存入 runs。增益一致後，實體靈敏度差異仍需量測。
+configure 要求每個裝置恰有一個可控制的 AGC 節點。目前 A 未提供相同 AGC 介面，命令可能拒絕執行，不能當作四支設定成功。歷史讀回 B/C/D 的 AGC 關閉、四支固定增益約 -1.99 dB，換接線後須重查。實體靈敏度仍需量測。
 
 聲紋註冊使用工作台 users 的實際 ID。至少兩個不同的單聲道錄音檔，每檔需有至少兩秒被 VAD 偵測到的語音。
 
@@ -157,7 +163,7 @@ sample1.wav、sample2.wav、query.wav 需由使用環境準備。建議每段 5�
 
 定位啟動時，把喇叭放在量測的校準位置並持續播放寬頻訊號，校準期間保持喇叭與麥克風靜止。確認 status 的 clock 有校準結果、localization_error 為 null，再停止校準聲。每次重開 USB 串流重新估計初始偏移與時鐘漂移。校準段殘差過大會回報該功能錯誤。
 
-定位使用所有麥克風配對的 GCC-PHAT 相關值，三支有三對、四支有六對。分析頻帶為 150～8000 Hz，回報 ok、ambiguous 或 no_signal。peak_margin 是峰值差距指標。硬體方位誤差與持續校準有效時間仍待量測。
+定位使用所有麥克風配對的 GCC-PHAT 相關值，三支有三對、四支有六對。分析頻帶為 150～8000 Hz，回報 ok、ambiguous、no_signal 或 error。peak_margin 是峰值差距指標。目前硬體同步穩定性未通過，不能把 status=ok 或 0.1° 輸出解析度當成實際精度。
 
 本機錄音中反覆觀察到約 256 個取樣點的相對時間跳變。陣列設定的 `clock_jump_samples=256` 啟用整塊補償，`0` 停用。離線 locate、網頁分析與即時 aligned_window 共用補償邏輯。每 0.1 秒估計整塊偏移，補償後檢查六組配對的延遲是否在收音孔間距允許的範圍內。至少七成音窗通過才使用該段定位。此方法要求最大聲程差小於半個補償區塊，更換設備或陣列尺寸後需要重新驗證。補償量依音訊估計，持續漂移、反射與低訊號片段仍可能使驗證失敗。
 
@@ -207,7 +213,7 @@ LLM 只需訂閱 identity，以最新且三秒內的觀測決定講者。收到�
 
 如果辨識一直顯示 pending，可用 `ros2 topic echo /project_a/speaker/recognition` 比對 `input_rms_dbfs`（A 軌近期平均音量）、`detected_speech_seconds`（本段已累積的辨識樣本秒數）和 `required_speech_seconds`（開始比對所需秒數）。有分數卻判 unknown 時，再查看聲紋的相似度和分差。
 
-Project A 接收端需支援 source=voice_detect，以及 azimuth_deg 為 [-180, 180] 內的數字或 null。公開的 feature/live-dialogue-monitor 分支仍只接受 source=mock 與有限角度。部署時請確認實際版本支援上述欄位。
+Project A 接收端需支援 source=voice_detect，以及 azimuth_deg 為 [-180, 180] 內的數字或 null。先前核對的 feature/live-dialogue-monitor 版本只接受 source=mock 與有限角度，尚未重新核對目前上游版本。部署時請確認實際版本支援上述欄位。
 
 use_speaker_identity=true 時，以文字提交當下三秒內的最新觀測決定當輪身分，音訊片段的精確配對仍待整合。角度基準依量測模式而定，location 保留空字串。手臂控制端使用 direction 的底座方位。
 
@@ -257,13 +263,13 @@ analyze 仍需三個或四個實際 WAV 作為輸入。單檔聲紋辨識可使�
 
 共享模式下，固定沙沙聲會逐漸壓低，其中一軌後段全為零。改用獨佔模式後，三軌持續收到固定聲音；200～8000 Hz 頻帶內，固定聲音後段比安靜段高約 15～16 dB。當時 Windows 為三個端點掛上 Voice Clarity，確切責任元件仍待單獨驗證。原始錄音亦觀察到低頻雜訊。
 
-這些結果支持本機採用獨佔模式。換電腦後可用附帶 [30 秒沙沙聲](assets/test_audio/broadband_30s.wav) 和 [29 秒噪音／掃頻對照](assets/test_audio/noise_vs_sweep_29s.wav) 檢查完整收音。各機音效環境、靈敏度、朝向與反射仍需評估。
+這些是當時選擇獨佔模式的依據；11/25 四支獨佔實錄仍有時間跳變，因此不能把獨佔視為同步解法。換電腦後可用附帶 [30 秒沙沙聲](assets/test_audio/broadband_30s.wav) 和 [29 秒噪音／掃頻對照](assets/test_audio/noise_vs_sweep_29s.wav) 檢查完整收音。各機音效環境、靈敏度、朝向與反射仍需評估。
 
 ## 測試與後續驗收
 
     .\voice.cmd test
 
-41 項軟體測試涵蓋三／四支 CLI、已知方位、時間偏移與漂移、功能四種開關組合、初始化及執行錯誤隔離、有界音訊緩衝、觀測過期、有效語音累積、發話分段與講者切換、舊聲紋相容與樣本補錄，以及實際 ONNX 合成特徵推論。真人辨識率仍待驗證。
+2026-11-27 執行的 49 項軟體測試全部通過，涵蓋三／四支 CLI、已知方位、時間偏移與漂移、功能四種開關組合、初始化及執行錯誤隔離、有界音訊緩衝、觀測過期、有效語音累積、發話分段與講者切換、舊聲紋相容與樣本補錄，以及實際 ONNX 合成特徵推論。真人辨識率仍待驗證。
 
 目前已完成軟體回歸、三支實體收音與小規模真人聲紋測試。實際收音、定位與 LLM 串接的驗收步驟見 [TEST_PLAN.md](TEST_PLAN.md)。live 使用固定容量滾動緩衝，持續模式的原音只保留最近一段供分析。完整長錄音需要另外加入分段寫檔或長錄音支援。
 
@@ -275,3 +281,17 @@ analyze 仍需三個或四個實際 WAV 作為輸入。單檔聲紋辨識可使�
 - [Windows AGC 介面](https://learn.microsoft.com/en-us/windows/win32/api/devicetopology/nn-devicetopology-iaudioautogaincontrol)
 
 模型固定版本與雜湊保存在 models/model_info.json。套件及模型依各自授權使用，ROS 套件的授權欄位見其 package.xml。
+
+## 目前桌面測試與通訊診斷
+
+附帶 `config/array.json` 是桌面測試座標，並非工作台或 RobotBase 正式量測。A 右前 `[0.1555,0.11,0]`、B 左前 `[-0.1555,0.11,0]`、C 左後 `[-0.1555,-0.11,0]`、D 右後 `[0.1555,-0.11,0]`，單位 m。校準聲源 `[0.155,0.310,0]`。X 朝右、Y 朝前、Z 朝上，前 0°、左 +90°。
+
+新版 record 同時保存 `timing.json`。以下使用原生共享 RAW 錄音，裝置編號須重新確認：
+
+    .\voice.cmd record --devices 36 35 33 30 --seconds 40 --raw-shared --capture-latency 0.1
+
+live 可在 JSON 加入 `"capture_mode":"shared_raw"` 和 `"capture_latency_seconds":0.1`。主設定目前仍省略這兩欄，沿用獨佔模式。網頁的「共享」仍是舊共享模式，沒有 RAW 選項。RAW 略過可選系統音效，驅動與硬體固定處理仍可能保留。
+
+四支在原生獨佔模式檢查中只接受單聲道 16-bit、48 kHz，降低程式內的取樣率不能直接減少硬體 USB 傳輸。Hub 壅塞、裝置取樣時鐘與驅動緩衝行為均待區分，尚未證明根因。`clock_jump_samples=256` 是實驗補償，固定聲源仍出現錯誤角度，不能當成修復完成。
+
+目前停止實體測試，因使用者暫時不方便播放。下次須先取得聲源已播放的明確回覆，才啟動 `runs/communication_comparison.py`；它會依序錄單支 A、四支共享 RAW、四支較大緩衝獨佔各 40 秒。`broadband_30s.wav` 含前後各 5 秒安靜，不能當成不中斷的 30 秒沙沙聲。
