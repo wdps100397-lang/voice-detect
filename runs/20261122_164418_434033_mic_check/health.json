@@ -1,0 +1,61 @@
+{
+  "tracks": [
+    {
+      "track": "A",
+      "seconds": 60.0,
+      "peak_dbfs": -35.1,
+      "quiet_seconds_p10_dbfs": -240.0,
+      "median_second_rms_dbfs": -85.6,
+      "digital_zero_percent": 90.8
+    },
+    {
+      "track": "B",
+      "seconds": 59.99,
+      "peak_dbfs": -39.0,
+      "quiet_seconds_p10_dbfs": -240.0,
+      "median_second_rms_dbfs": -99.9,
+      "digital_zero_percent": 96.33
+    },
+    {
+      "track": "C",
+      "seconds": 59.98,
+      "peak_dbfs": -36.0,
+      "quiet_seconds_p10_dbfs": -240.0,
+      "median_second_rms_dbfs": -91.3,
+      "digital_zero_percent": 93.88
+    }
+  ],
+  "exact_duplicate_pairs": [],
+  "settings": [
+    {
+      "id": "{0.0.1.00000000}.{10292e93-dbfa-4644-8a1a-fddfbfed094e}",
+      "name": "麥克風 (USBAudio2.0)",
+      "agc": 0,
+      "volume_db": -1.9921875,
+      "mute": 0,
+      "sysfx_disabled": true
+    },
+    {
+      "id": "{0.0.1.00000000}.{b08ab614-2a91-4d7f-9611-444433091915}",
+      "name": "麥克風 (4- USBAudio2.0)",
+      "agc": 0,
+      "volume_db": -1.9921875,
+      "mute": 0,
+      "sysfx_disabled": true
+    },
+    {
+      "id": "{0.0.1.00000000}.{d218fbca-c6a4-4c20-b0d7-683f2ae7a48d}",
+      "name": "麥克風 (2- USBAudio2.0)",
+      "agc": 0,
+      "volume_db": -1.9921875,
+      "mute": 0,
+      "sysfx_disabled": true
+    }
+  ],
+  "recording_needs_review": false,
+  "notes": [
+    "Ambient levels include room sound and are not microphone self-noise measurements.",
+    "Small file length differences are not measurements of clock drift.",
+    "Nonidentical streams alone do not prove physical A/B/C mapping."
+  ]
+}

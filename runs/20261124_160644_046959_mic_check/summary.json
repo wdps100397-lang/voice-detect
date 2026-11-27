@@ -1,0 +1,21 @@
+{
+  "requested_seconds": 36,
+  "microphone_count": 1,
+  "started_at_unix": 1795507567.9597342,
+  "exclusive_mode": true,
+  "inactive_streams": [],
+  "needs_review": false,
+  "tracks": [
+    {
+      "track": "A",
+      "index": 27,
+      "device": "麥克風 (2- USBAudio2.0)",
+      "sample_rate_hz": 48000,
+      "frames": 1729920,
+      "seconds": 36.04,
+      "peak_pcm": 2501,
+      "at_pcm_limits": 0,
+      "stream_flags": {}
+    }
+  ]
+}

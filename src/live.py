@@ -13,7 +13,8 @@ from scipy.signal import resample_poly
 import tempfile
 
 from src.common import ROOT, read_json
-from src.localization import fit_clock, validate_positions
+from src.audio_transport import input_stream, timing_row
+from src.localization import align_tracks, calibration_distances, fit_clock, in_robot_frame, measured_positions, robot_frame
 from src.features import switches, evaluate, combined_identity
 
 MIN_WINDOW_SECONDS = 1.0
@@ -30,12 +31,15 @@ class AudioRing:
         self.size = 0
         self.lock = threading.Lock()
         self.error = None
+        self.timings = deque(maxlen=8192)
 
-    def append(self, data, status=None):
+    def append(self, data, status=None, timing=None):
         block = np.frombuffer(data, dtype="<i2").astype(np.float64) / 32768
         with self.lock:
             if status:
                 self.error = str(status)
+            if timing is not None:
+                self.timings.append(timing_row(timing, self.total, len(block)))
             self.blocks.append(block)
             self.total += len(block)
             self.size += len(block)
@@ -56,7 +60,7 @@ class AudioRing:
 
 
 class LiveCapture:
-    def __init__(self, devices, rate, buffer_seconds):
+    def __init__(self, devices, rate, buffer_seconds, *, capture_mode="exclusive", latency_seconds=None):
         if len(devices) not in (1, 3, 4) or len(set(devices)) != len(devices) or any(isinstance(device, bool) or not isinstance(device, int) or device < 0 for device in devices):
             raise ValueError("Select distinct WASAPI devices in physical A/B/C/D order")
         self.devices = devices
@@ -65,6 +69,8 @@ class LiveCapture:
         self.stack = ExitStack()
         self.streams = []
         self.started_at = None
+        self.capture_mode = capture_mode
+        self.latency_seconds = latency_seconds
 
     def __enter__(self):
         try:
@@ -73,10 +79,9 @@ class LiveCapture:
                 if sd.query_hostapis(info["hostapi"])["name"] != "Windows WASAPI":
                     raise ValueError("Live USB acquisition requires WASAPI inputs")
                 def callback(data, frames, timing, status, target=ring):
-                    target.append(data, status)
-                stream = sd.RawInputStream(device=device, channels=1, samplerate=self.rate,
-                                           dtype="int16", blocksize=0, callback=callback,
-                                           extra_settings=sd.WasapiSettings(exclusive=True))
+                    target.append(data, status, timing)
+                stream = input_stream(device, self.rate, callback, mode=self.capture_mode,
+                                      latency=self.latency_seconds)
                 self.stack.callback(stream.close)
                 self.streams.append(stream)
             self.started_at = time.time()
@@ -92,11 +97,12 @@ class LiveCapture:
 
     def snapshots(self):
         if not all(stream.active for stream in self.streams):
-            raise RuntimeError("A microphone stopped. Restart the worker to recalibrate.")
+            errors = [str(stream.error) for stream in self.streams if getattr(stream, "error", None)]
+            raise RuntimeError("A microphone stopped. Restart the worker to recalibrate. " + " ".join(errors))
         return [ring.snapshot() for ring in self.rings]
 
 
-def aligned_window(snapshots, clock, rate, seconds):
+def aligned_window(snapshots, clock, rate, seconds, *, positions=None, packet_samples=0):
     if len(snapshots) != len(clock["channels"]):
         raise ValueError("Clock channel count differs from the active microphones")
     # Reserve enough samples for either sign of device offset, then interpolate
@@ -105,6 +111,14 @@ def aligned_window(snapshots, clock, rate, seconds):
     allowance = max(abs(row["offset_seconds"]) + abs(row["drift"]) * common_end
                     for row in clock["channels"]) + .02
     end = common_end - allowance
+    if packet_samples:
+        try:
+            audio, _ = align_tracks([audio for _, audio in snapshots], rate, clock, end - seconds, end,
+                                    starts=[start for start, _ in snapshots], positions=positions,
+                                    packet_samples=packet_samples)
+        except ValueError:
+            return None
+        return end, audio
     times = np.arange(round((end - seconds) * rate), round(end * rate)) / rate
     if len(times) == 0:
         return None
@@ -205,13 +219,15 @@ class Recognizer:
 
 def observation(audio, rate, positions, recognizer, timestamp, now,
                 enable_speaker=True, enable_localization=True,
-                speaker_error=None, localization_error=None, window_end_sample=None, speaker_history=None):
+                speaker_error=None, localization_error=None, window_end_sample=None, speaker_history=None,
+                *, frame=None):
     if not 0 <= now - timestamp <= 3:
         return None, dict(status="stale")
     speaker, location = evaluate(audio, rate, positions, recognizer,
                                  enable_speaker, enable_localization,
                                  speaker_error, localization_error, window_end_sample=window_end_sample,
                                  speaker_history=speaker_history)
+    location = in_robot_frame(location, frame)
     if "detected_speech_seconds" in speaker and len(audio[0]):
         power = np.mean(np.square(audio[0]))
         speaker = dict(speaker, input_rms_dbfs=round(10 * np.log10(max(power, 1e-12)), 1))
@@ -250,14 +266,17 @@ def run_live(config_path, emit, stop=None):
         window = float(config.get("window_seconds", DEFAULT_WINDOW_SECONDS))
         if not MIN_WINDOW_SECONDS <= window <= 10:
             raise ValueError(f"window_seconds must be between {MIN_WINDOW_SECONDS:g} and 10")
-    positions, recognizer = None, None
+    positions, recognizer, frame = None, None, None
+    packet_samples = 0
     speaker_error, localization_error = None, None
     if enable_localization:
         try:
             geometry = read_json(ROOT / config["array_config"])
-            if geometry.get("geometry_measured") is not True:
-                raise ValueError("Measure array coordinates and set geometry_measured=true")
-            positions = validate_positions(geometry["positions_m"], count)
+            measured = measured_positions(geometry, count)
+            distances = calibration_distances(geometry, measured, config.get("calibration_distances_m"))
+            frame = robot_frame(geometry, measured)
+            positions = measured
+            packet_samples = geometry.get("clock_jump_samples", 0)
         except Exception as error:
             localization_error = str(error)
     if enable_speaker:
@@ -293,7 +312,12 @@ def run_live(config_path, emit, stop=None):
     if len(devices) < required:
         raise ValueError(f"Configure at least {required} devices in A/B/C/D order")
     clock = None
-    with LiveCapture(devices[:required], rate, max(duration + 2, window + 3)) as capture:
+    transport = {}
+    if "capture_mode" in config:
+        transport["capture_mode"] = config["capture_mode"]
+    if "capture_latency_seconds" in config:
+        transport["latency_seconds"] = config["capture_latency_seconds"]
+    with LiveCapture(devices[:required], rate, max(duration + 2, window + 3), **transport) as capture:
         if positions is not None:
             emit(dict(kind="status", phase="calibrating",
                       message="Keep the broadband calibration source stationary until phase=ready"))
@@ -310,8 +334,10 @@ def run_live(config_path, emit, stop=None):
             try:
                 if any(start != 0 for start, _ in snapshots):
                     raise ValueError("Calibration audio buffer expired")
-                distances = config["calibration_distances_m"][:count]
-                clock = fit_clock([audio for _, audio in snapshots], rate, .5, duration - .2, distances)
+                calibration_start = .5
+                if packet_samples:
+                    calibration_start = max(.5, duration - 6.2)
+                clock = fit_clock([audio for _, audio in snapshots], rate, calibration_start, duration - .2, distances)
             except Exception as error:
                 localization_error = str(error)
         emit(dict(kind="status", phase="ready" if clock is not None or recognizer is not None else "degraded",
@@ -321,7 +347,11 @@ def run_live(config_path, emit, stop=None):
             tick = time.monotonic()
             snapshots = capture.snapshots()
             window_localization_error = localization_error
-            result = aligned_window(snapshots, clock, rate, window) if clock else raw_window(snapshots, rate, window)
+            if clock and packet_samples:
+                result = aligned_window(snapshots, clock, rate, window,
+                                        positions=positions, packet_samples=packet_samples)
+            else:
+                result = aligned_window(snapshots, clock, rate, window) if clock else raw_window(snapshots, rate, window)
             if result is None and clock is not None:
                 result = raw_window(snapshots, rate, window)
                 window_localization_error = localization_error or "Aligned localization window is unavailable"
@@ -338,7 +368,7 @@ def run_live(config_path, emit, stop=None):
                 payload, diagnostics = observation(
                     audio, rate, positions, recognizer, timestamp, time.time(),
                     enable_speaker, enable_localization, speaker_error, window_localization_error,
-                    window_end_sample=end_sample, speaker_history=history)
+                    window_end_sample=end_sample, speaker_history=history, frame=frame)
                 if payload is not None:
                     emit(dict(kind="identity", data=payload))
                 if not diagnostics["status"].startswith("stale"):

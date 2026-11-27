@@ -11,6 +11,7 @@ import time
 import wave
 
 import sounddevice as sd
+from src.audio_transport import input_stream, timing_row
 
 
 def list_inputs():
@@ -30,8 +31,10 @@ class Track:
         self.rate = round(device["default_samplerate"])
         self.audio = bytearray()
         self.flags = {}
+        self.timings = []
 
     def collect(self, data, frames, timing, status):
+        self.timings.append(timing_row(timing, len(self.audio) // 2, frames))
         self.audio.extend(data)
         if status:
             flag = str(status)
@@ -58,21 +61,20 @@ class Track:
 
 
 def capture_to_directory(indices, seconds, exclusive=False, *, samplerate=None,
-                         on_started=None, on_progress=None, stop=None, folder=None):
+                         on_started=None, on_progress=None, stop=None, folder=None,
+                         capture_mode=None, latency_seconds=None):
     if not 1 <= len(indices) <= 4 or len(set(indices)) != len(indices):
         raise ValueError("Select one to four distinct input devices")
     if stop and stop.is_set():
         raise InterruptedError("已停止錄音")
     tracks = [Track(label, index) for label, index in zip("ABCD", indices)]
+    mode = capture_mode or ("exclusive" if exclusive else "shared")
     with ExitStack() as stack:
         streams = []
         for track in tracks:
             try:
-                stream = sd.RawInputStream(
-                    device=track.index, channels=1, samplerate=samplerate or track.rate,
-                    dtype="int16", callback=track.collect,
-                    extra_settings=sd.WasapiSettings(exclusive=True) if exclusive else None,
-                )
+                stream = input_stream(track.index, samplerate or track.rate, track.collect,
+                                      mode=mode, latency=latency_seconds)
             except sd.PortAudioError as error:
                 raise RuntimeError(f"{track.label} [{track.index}] {track.name}: {error}") from error
             # Register cleanup as soon as the device is opened.
@@ -96,6 +98,8 @@ def capture_to_directory(indices, seconds, exclusive=False, *, samplerate=None,
                 on_progress(time.monotonic() - started)
             time.sleep(0.1)
         inactive = [track.label for track, stream in zip(tracks, streams) if not stream.active]
+        stream_errors = {track.label: str(stream.error) for track, stream in zip(tracks, streams)
+                         if getattr(stream, "error", None) is not None}
 
     if stop and stop.is_set():
         raise InterruptedError("已停止錄音")
@@ -114,20 +118,29 @@ def capture_to_directory(indices, seconds, exclusive=False, *, samplerate=None,
         "requested_seconds": seconds,
         "microphone_count": len(tracks),
         "started_at_unix": started_at_unix,
-        "exclusive_mode": exclusive,
+        "exclusive_mode": mode == "exclusive",
+        "capture_mode": mode,
+        "capture_latency_seconds": latency_seconds,
         "inactive_streams": inactive,
+        "stream_errors": stream_errors,
         "needs_review": needs_review,
         "tracks": results,
     }
     (folder / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    (folder / "timing.json").write_text(json.dumps(dict(
+        schema=1, capture_mode=mode,
+        note="Device positions and timestamps do not establish cross-device ADC synchronization.",
+        tracks=[dict(track=track.label, index=track.index, packets=track.timings) for track in tracks]),
+        indent=2) + "\n", encoding="utf-8")
     return folder, summary
 
 
-def record(indices, seconds, exclusive=False):
+def record(indices, seconds, exclusive=False, *, capture_mode=None, latency_seconds=None):
     def announce():
         print(f"Recording for {seconds} seconds. Ambient or test sounds are sufficient.", flush=True)
 
-    folder, summary = capture_to_directory(indices, seconds, exclusive, on_started=announce)
+    folder, summary = capture_to_directory(indices, seconds, exclusive, on_started=announce,
+                                           capture_mode=capture_mode, latency_seconds=latency_seconds)
     print(folder)
     for result in summary["tracks"]:
         print(f"{result['track']} [{result['index']}] {result['device']} | "

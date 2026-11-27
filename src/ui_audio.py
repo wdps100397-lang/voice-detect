@@ -6,7 +6,7 @@ import numpy as np
 from scipy.io import wavfile
 
 from src.common import ROOT, load_audio, save_json
-from src.localization import calibration, locate, validate_positions
+from src.localization import calibration, calibration_distances, locate, measured_positions, robot_frame
 
 
 def new_run(kind):
@@ -41,16 +41,16 @@ def tracks_in(folder, count):
     return files
 
 
-def localize_run(folder, count, positions, distances, cal_start, cal_end, test_start, test_end,
-                 max_extrapolation, expected):
+def localize_run(folder, count, geometry, distances, cal_start, cal_end, test_start, test_end, expected):
     files = tracks_in(folder, count)
-    positions = validate_positions(positions, count)
+    positions = measured_positions(geometry, count)
+    distances = calibration_distances(geometry, positions, distances)
+    robot_frame(geometry, positions)
     output = new_run("direction")
-    geometry, clock_path = output / "array.json", output / "clock.json"
-    save_json(geometry, dict(geometry_measured=True, positions_m=positions.tolist(),
-                             max_extrapolation_seconds=max_extrapolation))
+    geometry_path, clock_path = output / "array.json", output / "clock.json"
+    save_json(geometry_path, geometry)
     clock = calibration(files, cal_start, cal_end, distances, clock_path)
-    result = locate(files, geometry, clock_path, test_start, test_end)
+    result = locate(files, geometry_path, clock_path, test_start, test_end)
     result.update(source_folder=str(folder), interval_seconds=[test_start, test_end],
                   expected_azimuth_deg=expected)
     if expected is not None and result["status"] == "ok":

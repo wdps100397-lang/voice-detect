@@ -1,0 +1,674 @@
+[
+  {
+    "status": "ok",
+    "azimuth_deg": -26.0,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 40.6,
+    "best_candidate_azimuth_deg": -26.0,
+    "peak_margin": 0.4365542456888858,
+    "windows": 10,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 10,
+      "total_frames": 10,
+      "corrections": [
+        {
+          "start_seconds": 15.0,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.1,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.2,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.3,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.4,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.5,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.6,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.7,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.8,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.9,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      15,
+      16
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": -25.0,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 39.0,
+    "best_candidate_azimuth_deg": -25.0,
+    "peak_margin": 0.420797994915938,
+    "windows": 7,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 7,
+      "total_frames": 10,
+      "corrections": [
+        {
+          "start_seconds": 17.0,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.1,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.2,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.3,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.4,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.5,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.6,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.7,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": false
+        },
+        {
+          "start_seconds": 17.8,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": false
+        },
+        {
+          "start_seconds": 17.9,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": false
+        }
+      ]
+    },
+    "interval_seconds": [
+      17,
+      18
+    ]
+  },
+  {
+    "interval_seconds": [
+      19,
+      20
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      25,
+      26
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（5/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      27,
+      28
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      28,
+      29
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      29,
+      30
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      30,
+      31
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      31,
+      32
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      33,
+      34
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "interval_seconds": [
+      35,
+      36
+    ],
+    "status": "error",
+    "reason": "同步補償後仍有過多片段無法驗證（0/10），請重新校準。"
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 74.7,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 24.8,
+    "best_candidate_azimuth_deg": 74.7,
+    "peak_margin": 0.5586679326089818,
+    "windows": 8,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 8,
+      "total_frames": 10,
+      "corrections": [
+        {
+          "start_seconds": 38.0,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": false
+        },
+        {
+          "start_seconds": 38.1,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": false
+        },
+        {
+          "start_seconds": 38.2,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.3,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.4,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.5,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.6,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.7,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.8,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.9,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      38,
+      39
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 69.5,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 11.6,
+    "best_candidate_azimuth_deg": 69.5,
+    "peak_margin": 0.5778439063454417,
+    "windows": 10,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 10,
+      "total_frames": 10,
+      "corrections": [
+        {
+          "start_seconds": 40.0,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.1,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.2,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.3,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.4,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.5,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.6,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.7,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.8,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.9,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      40,
+      41
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 68.6,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 22.2,
+    "best_candidate_azimuth_deg": 68.6,
+    "peak_margin": 0.5846745766026171,
+    "windows": 10,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 10,
+      "total_frames": 10,
+      "corrections": [
+        {
+          "start_seconds": 43.0,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.1,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.2,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.3,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.4,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.5,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.6,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.7,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.8,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.9,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      43,
+      44
+    ]
+  }
+]

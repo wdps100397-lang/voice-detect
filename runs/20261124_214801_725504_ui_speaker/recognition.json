@@ -1,0 +1,15 @@
+{
+  "database": "C:\\Users\\王翊丞\\Desktop\\TMrobot\\voice_detect\\runs\\20261124_speaker_test\\speakers.json",
+  "margin": 0.08,
+  "status": "recognized",
+  "user_id": "蔡電機",
+  "score": 0.7372193199905648,
+  "score_gap": 0.29108612776034715,
+  "threshold": 0.65,
+  "scores": {
+    "蔡電機": 0.7372193199905648,
+    "懶基": 0.44613319223021763,
+    "劉坤泰": 0.3466668310074427,
+    "王翊丞": 0.07491794878720619
+  }
+}

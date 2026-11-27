@@ -1,0 +1,54 @@
+{
+  "calibration_interval_seconds": [
+    9,
+    15
+  ],
+  "validation": [
+    {
+      "interval_seconds": [
+        15,
+        16.4
+      ],
+      "status": "ok",
+      "estimated_azimuth_deg": -25.6,
+      "nominal_azimuth_deg": -26.56505117707799,
+      "absolute_error_deg": 0.9650511770779815,
+      "peak_margin": 0.42131969666152436
+    },
+    {
+      "interval_seconds": [
+        15,
+        15.5
+      ],
+      "status": "ok",
+      "estimated_azimuth_deg": -25.4,
+      "nominal_azimuth_deg": -26.56505117707799,
+      "absolute_error_deg": 1.1650511770779985,
+      "peak_margin": 0.442135381286336
+    },
+    {
+      "interval_seconds": [
+        15.5,
+        16
+      ],
+      "status": "ok",
+      "estimated_azimuth_deg": -25.8,
+      "nominal_azimuth_deg": -26.56505117707799,
+      "absolute_error_deg": 0.7650511770779929,
+      "peak_margin": 0.4079197718984943
+    },
+    {
+      "interval_seconds": [
+        16,
+        16.4
+      ],
+      "status": "ok",
+      "estimated_azimuth_deg": -25.6,
+      "nominal_azimuth_deg": -26.56505117707799,
+      "absolute_error_deg": 0.9650511770779815,
+      "peak_margin": 0.41114314845897537
+    }
+  ],
+  "source_positions_are_user_measurements": true,
+  "note": "Validation at the same fixed source used for clock calibration. Other directions require independent testing."
+}

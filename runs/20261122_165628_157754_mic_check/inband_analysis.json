@@ -1,0 +1,34 @@
+{
+  "tracks": [
+    {
+      "track": "A",
+      "inband_200_8000_dbfs": {
+        "quiet": -68.2,
+        "noise_early": -48.0,
+        "noise_late": -52.9,
+        "sweep_early": -53.6,
+        "sweep_late": -54.4
+      }
+    },
+    {
+      "track": "B",
+      "inband_200_8000_dbfs": {
+        "quiet": -69.1,
+        "noise_early": -50.0,
+        "noise_late": -54.9,
+        "sweep_early": -55.8,
+        "sweep_late": -56.5
+      }
+    },
+    {
+      "track": "C",
+      "inband_200_8000_dbfs": {
+        "quiet": -69.6,
+        "noise_early": -49.2,
+        "noise_late": -54.1,
+        "sweep_early": -54.9,
+        "sweep_late": -55.6
+      }
+    }
+  ]
+}

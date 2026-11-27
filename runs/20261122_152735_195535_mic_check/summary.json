@@ -1,0 +1,18 @@
+{
+  "requested_seconds": 5,
+  "inactive_streams": [],
+  "needs_review": false,
+  "tracks": [
+    {
+      "track": "A",
+      "index": 24,
+      "device": "麥克風 (USBAudio2.0)",
+      "sample_rate_hz": 48000,
+      "frames": 240480,
+      "seconds": 5.01,
+      "peak_pcm": 343,
+      "at_pcm_limits": 0,
+      "stream_flags": {}
+    }
+  ]
+}

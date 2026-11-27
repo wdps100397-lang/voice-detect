@@ -105,8 +105,15 @@
             <label>取樣率（Hz）<input id="a-rate" type="number" min="8000" max="192000"></label>
             <label>錄音模式<select id="a-mode"><option>獨佔</option><option>共享</option></select></label>
           </div>
-          <div class="table-scroll"><table class="microphones"><thead><tr><th scope="col">孔位</th><th scope="col">WASAPI 輸入</th><th scope="col">X（m）</th><th scope="col">Y（m）</th><th scope="col">校準聲程（m）</th></tr></thead><tbody id="mics"></tbody></table></div>
-          <p>校準聲程是固定聲源到各支麥克風的距離。</p>
+          <label>座標格式<select id="a-coordinate-mode"><option value="robot_base_mm">手臂 RobotBase（mm）</option><option value="array_m">陣列相對座標（m）</option></select></label>
+          <p id="a-coordinate-note">在 TMflow 選 RobotBase 和已校正的量測 TCP，直接填收音孔中心的 X、Y、Z。</p>
+          <div class="table-scroll"><table class="microphones"><thead><tr><th scope="col">孔位</th><th scope="col">WASAPI 輸入</th><th scope="col" id="a-axis-x">X（mm）</th><th scope="col" id="a-axis-y">Y（mm）</th><th scope="col" id="a-axis-z">Z（mm）</th><th scope="col">校準聲程（m）</th></tr></thead><tbody id="mics"></tbody></table></div>
+          <p>填入喇叭座標即可算出各孔的校準聲程。也可將喇叭座標留空，直接填各孔聲程。</p>
+          <div class="fields three">
+            <label><span id="a-source-label-x">校準喇叭 X（mm）</span><input id="a-source-x" type="number" step="any"></label>
+            <label><span id="a-source-label-y">校準喇叭 Y（mm）</span><input id="a-source-y" type="number" step="any"></label>
+            <label><span id="a-source-label-z">校準喇叭 Z（mm）</span><input id="a-source-z" type="number" step="any"></label>
+          </div>
           <div class="buttons">
             <label class="check"><input id="a-measured" type="checkbox">座標已量測</label>
             <label class="button file">匯入座標 JSON<input id="a-geometry" type="file" accept=".json,application/json" data-action></label>

@@ -1,0 +1,54 @@
+{
+  "requested_seconds": 20,
+  "microphone_count": 4,
+  "started_at_unix": 1795596916.4562674,
+  "exclusive_mode": true,
+  "inactive_streams": [],
+  "needs_review": false,
+  "tracks": [
+    {
+      "track": "A",
+      "index": 36,
+      "device": "麥克風 (USBAudio2.0)",
+      "sample_rate_hz": 48000,
+      "frames": 965632,
+      "seconds": 20.117,
+      "peak_pcm": 1194,
+      "at_pcm_limits": 0,
+      "stream_flags": {}
+    },
+    {
+      "track": "B",
+      "index": 35,
+      "device": "麥克風 (4- USBAudio2.0)",
+      "sample_rate_hz": 48000,
+      "frames": 964800,
+      "seconds": 20.1,
+      "peak_pcm": 1704,
+      "at_pcm_limits": 0,
+      "stream_flags": {}
+    },
+    {
+      "track": "C",
+      "index": 33,
+      "device": "麥克風 (5- USBAudio2.0)",
+      "sample_rate_hz": 48000,
+      "frames": 963840,
+      "seconds": 20.08,
+      "peak_pcm": 1407,
+      "at_pcm_limits": 0,
+      "stream_flags": {}
+    },
+    {
+      "track": "D",
+      "index": 30,
+      "device": "麥克風 (USBAudio2.0)",
+      "sample_rate_hz": 48000,
+      "frames": 962880,
+      "seconds": 20.06,
+      "peak_pcm": 1414,
+      "at_pcm_limits": 0,
+      "stream_flags": {}
+    }
+  ]
+}

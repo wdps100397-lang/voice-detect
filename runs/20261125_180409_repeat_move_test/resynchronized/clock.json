@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sample_rate": 48000,
+  "interval": [
+    8,
+    14
+  ],
+  "channels": [
+    {
+      "offset_seconds": 0.0,
+      "drift": 0.0
+    },
+    {
+      "offset_seconds": 0.00032850391280508023,
+      "drift": -0.0011447800993571054,
+      "residual_p95_seconds": 1.5798996688090594e-05
+    },
+    {
+      "offset_seconds": -0.0015791797029156985,
+      "drift": -0.0005245683567114767,
+      "residual_p95_seconds": 9.663939216831858e-06
+    },
+    {
+      "offset_seconds": -0.0035865474219996677,
+      "drift": -0.0006506474649327903,
+      "residual_p95_seconds": 6.781624415548581e-06
+    }
+  ],
+  "fingerprints": [
+    "981d2c2ae798a28b11574c9dcc3ba9269ce268105ed661b711d45ab972defbd1",
+    "535bff163de7b8702da8495ac5bd3283c2320ff70b2c9a3126eeb0d792d46612",
+    "2f90b4c36e4b7b5c015ede7560c73b674683113cdc6cb902ef8368159a1037bf",
+    "63963a9d63de545c2fcb63092a45a88a522f2204cadf0a3279025d065c37e598"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "geometry_measured": true,
+  "positions_m": [
+    [
+      0.1555,
+      0.11,
+      0.0
+    ],
+    [
+      -0.1555,
+      0.11,
+      0.0
+    ],
+    [
+      -0.1555,
+      -0.11,
+      0.0
+    ],
+    [
+      0.1555,
+      -0.11,
+      0.0
+    ]
+  ],
+  "calibration_source_m": [
+    0.155,
+    0.4,
+    0
+  ],
+  "max_extrapolation_seconds": 30
+}

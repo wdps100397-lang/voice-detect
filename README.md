@@ -1,8 +1,8 @@
 # 四支 USB 麥克風定位與聲紋辨識（可切換三支）
 
-更新日期為 2026-11-24。
+更新日期為 2026-11-25。
 
-此專案提供聲紋辨識、水平聲源方向估計，以及 Project A 的 ROS 2 發布節點。麥克風數量可設定為三支或四支，聲紋與定位各自可開關。Windows 負責 USB 收音與模型推論，WSL 的 ROS 節點管理辨識程序並發布結果。外部 STT 負責產生文字。
+此專案提供聲紋辨識、三維聲源方向估計，以及 Project A 的 ROS 2 發布節點。麥克風數量可設定為三支或四支，聲紋與定位各自可開關。Windows 負責 USB 收音與模型推論，WSL 的 ROS 節點管理辨識程序並發布結果。外部 STT 負責產生文字。
 
 ## 目前狀態
 
@@ -18,9 +18,9 @@
 | 本機網頁測試台 | 已在 Chrome 驗證聲紋註冊、改 ID、辨識及錄音倒數取消。三軌、四軌合成音測試中，兩者皆將 45° 估為 46°。 |
 | ROS 發布節點 | 程式及套件已提供，觀測暫存與過期邏輯通過軟體測試，實際 DDS 傳輸與 Windows／WSL 程序聯動尚待部署驗收。 |
 | Project A 接收端 | LLM 只訂閱 identity。部署前需確認接收端接受 source=voice_detect 與空方位角，實際整合待驗收。 |
-| 自動測試 | 41 項通過，包含 CLI、模型推論、發話分段、聲紋補樣本、三／四支校準、功能開關及故障隔離。 |
+| 自動測試 | 涵蓋 CLI、模型推論、發話分段、聲紋補樣本、三／四支校準、不同仰角下的方位估計、功能開關及故障隔離。 |
 
-附帶設定預設四支、兩功能全開。devices 為空，geometry_measured 為 false，四個座標採邊長 20 公分正方形範例，校準距離也需以實測替換。部署時依啟用功能填寫裝置、幾何與真人註冊資料。
+附帶設定預設四支、兩功能全開。部署時依啟用功能填寫裝置與真人註冊資料，並將 [config/array.json](config/array.json) 的量測欄位填上現場數值。
 
 ## 取得專案與安裝
 
@@ -74,7 +74,7 @@ mic_check.py 和 audio_controls.py 保留為早期操作入口。
     .\voice.cmd ui
 
 - **聲紋辨識**可指定麥克風、錄音長度和倒數，也可匯入單聲道 WAV。在波形上拖曳或輸入起訖秒數來選擇發話區間，再調整數位增益、辨識門檻與最低分差。新講者需加入至少兩段不同錄音。替既有講者新增註冊樣本時，在名單按「補樣本」，加入至少一段新錄音，再按「更新聲紋樣本」。名單可修改 ID，也會顯示更新後的樣本數。
-- **聲源定位**可選三支或四支麥克風，設定孔位座標、校準聲程、錄音模式和取樣率。可直接多軌錄音、載入資料夾，或在瀏覽器一起選取 WAV。三軌使用 A.wav～C.wav，四軌再加 D.wav。請在同一段錄音先播放固定校準聲，後面再於欲測方向播放測試聲。填入兩個區間，確認座標已量測，按「校準並估算方向」。結果會顯示在方位盤，填真值時也會顯示角度誤差。
+- **聲源定位**可選三支或四支麥克風。可用「匯入座標 JSON」載入填好的 config/array.json，或在頁面填收音孔與校準喇叭座標。可直接多軌錄音、載入資料夾，或在瀏覽器一起選取 WAV。三軌使用 A.wav～C.wav，四軌再加 D.wav。請在同一段錄音先播放固定校準聲，後面再於欲測方向播放測試聲。填入兩個區間，確認座標已量測，按「校準並估算方向」。結果會顯示在方位盤，填真值時也會顯示角度誤差。
 - **保留設定**分頁、聲紋資料庫、講者選擇、麥克風、門檻、錄音與定位參數會自動寫入 data/ui_settings.json，下次開啟時恢復。首次開啟時優先使用設定的資料庫，若檔案尚未建立，會尋找本機既有的測試資料庫。
 
 網頁使用暫存音檔，重開後請重新錄音或匯入。用 Ctrl+C 結束測試台時會清理暫存音檔。已註冊的聲紋特徵留在資料庫，辨識、定位與校準的 JSON 留在 runs。持續收音與 ROS 發布使用下方的 live 啟動流程，參數由 config/live.json 管理。
@@ -91,7 +91,7 @@ mic_check.py 和 audio_controls.py 保留為早期操作入口。
       "enable_localization": true
     }
 
-microphone_count 接受整數 3 或 4，省略時也預設四支。若啟用定位，程式採用 devices、positions_m、calibration_distances_m 的前 N 筆。先填好四支的實際資料後，往後只改 microphone_count 即可切換。
+microphone_count 接受整數 3 或 4，省略時也預設四支。若啟用定位，程式採用 devices 和收音孔座標的前 N 筆。先填好四支的實際資料後，往後只改 microphone_count 即可切換。
 
 | 聲紋 | 定位 | 運行方式 |
 | --- | --- | --- |
@@ -114,8 +114,8 @@ microphone_count 接受整數 3 或 4，省略時也預設四支。若啟用定�
 | speech_gap_seconds | 0.8，連續這麼久未偵測到語音就結束發話，可設 0.2～5 秒。 |
 | vad_mode | 1，WebRTC 語音偵測嚴格度，可設 0～3。模式 1 讓較弱的語音容易被計入。現場背景聲常被誤判為語音時，可試模式 2。修改後重啟節點。 |
 | update_seconds | 0.5，worker 目標更新間隔，實際速度取決於推論時間。 |
-| calibration_seconds | 8，定位啟動校準長度，可設 5～30 秒。 |
-| calibration_distances_m | 四個範例 1.0，需換成校準聲源至各孔的實際公尺距離。 |
+| calibration_seconds | 15，定位啟動校準長度，可設 5～30 秒。本機啟用封包跳變補償時，採最後約 6 秒校準，讓開啟串流時的漂移先穩定。 |
+| calibration_distances_m | 舊版選填設定。當陣列 JSON 未包含校準喇叭座標欄位時，使用這裡直接量測的各孔聲程。 |
 | max_clock_age_seconds | 0，持續使用當次時鐘模型。設正值後，過期定位會回報 error，聲紋可繼續。 |
 | threshold／margin | 0.65／0.08，聲紋最高分與第二名差距的暫定門檻。 |
 
@@ -142,13 +142,24 @@ sample1.wav、sample2.wav、query.wav 需由使用環境準備。建議每段 5�
 
 ## 方向幾何與啟動校準
 
-在 [config/array.json](config/array.json) 填入使用中的收音孔座標，單位公尺，x 朝右、y 朝前。三支或四支需採非共線且位置相異的配置，完成量測後設 geometry_measured=true。第四個附帶座標也是範例。
+在 TMflow 選 `RobotBase` 和已校正的量測 TCP，依 A／B／C／D 記下各收音孔中心的位置。在 [config/array.json](config/array.json) 或網頁測試台的「手臂 RobotBase（mm）」模式直接填 TMflow 顯示的 X、Y、Z 毫米讀值。`Rx`、`Ry`、`Rz` 是工具姿態，這裡只需填位置。
 
-azimuth_deg 使用前方 0°、左側 +90°、右側 -90°、範圍 [-180,180]。方向模型採單聲源、水平遠場假設，距離應大於陣列尺寸數倍。
+| JSON 欄位 | 量測方式 |
+| --- | --- |
+| robot_base_positions_mm | 依 A／B／C／D 順序填收音孔中心的 `[X, Y, Z]`。收音孔須位置相異，且至少三孔不共線。三支模式可讓 D 保持空白。 |
+| robot_base_calibration_source_mm | 填校準喇叭發聲位置在同一個 RobotBase 中的 `[X, Y, Z]`，以毫米填寫。程式會算出喇叭到各收音孔的直線距離。 |
 
-定位啟動時，保持校準聲源與麥克風靜止，讓各支持續收到同一個寬頻訊號。填入聲源至各孔距離，等程式回報校準結果後再停止校準聲。確認 status 的 clock 有校準結果、localization_error 為 null。每次重開 USB 串流重新估計初始偏移與時鐘漂移。校準段殘差過大會回報該功能錯誤。
+填妥後將 `geometry_measured` 設為 `true`。即時收音使用的 WASAPI 裝置編號依 A／B／C／D 填在 `config/live.json`。舊版 `positions_m`、`calibration_source_m` 和選填的 `robot_frame` 仍可使用，網頁對應「陣列相對座標（m）」。舊版 `[X, Y]` 座標以 `Z=0` 讀取。
+
+`azimuth_deg` 在 RobotBase 模式以底座 +X 為 0°、+Y 為 +90°，陣列相對模式以陣列正前方為 0°、左側為 +90°。定位採單聲源遠場模型，建議聲源距離大於陣列尺寸數倍。程式用三維座標搜尋水平角與仰角，角度輸出可細化到 0.1°，實際精度須量測。平面陣列若有上下鏡像歧義，只在可判定時回報仰角大小 `absolute_elevation_deg`。帶正負的 `elevation_deg` 需要可區分其符號。水平角不明確時回報 `ambiguous`。
+
+使用 RobotBase 測點時，程式會自動輸出 `robot_yaw_deg`，並用各收音孔的中心平均值作為底座座標中的射線起點 `robot_ray_origin_m`。舊版陣列相對模式以 `robot_frame` 提供手臂方位轉換。陣列的水平位置若偏離底座旋轉軸，講話者離得越近，兩個原點看向同一個人的角度差越大。要用 `robot_yaw_deg` 近似 J1 目標方位，應盡量靠近旋轉軸安裝。手臂的固定 Z 與關節命令由手臂控制端設定。
+
+定位啟動時，把喇叭放在量測的校準位置並持續播放寬頻訊號，校準期間保持喇叭與麥克風靜止。確認 status 的 clock 有校準結果、localization_error 為 null，再停止校準聲。每次重開 USB 串流重新估計初始偏移與時鐘漂移。校準段殘差過大會回報該功能錯誤。
 
 定位使用所有麥克風配對的 GCC-PHAT 相關值，三支有三對、四支有六對。分析頻帶為 150～8000 Hz，回報 ok、ambiguous 或 no_signal。peak_margin 是峰值差距指標。硬體方位誤差與持續校準有效時間仍待量測。
+
+本機錄音中反覆觀察到約 256 個取樣點的相對時間跳變。陣列設定的 `clock_jump_samples=256` 啟用整塊補償，`0` 停用。離線 locate、網頁分析與即時 aligned_window 共用補償邏輯。每 0.1 秒估計整塊偏移，補償後檢查六組配對的延遲是否在收音孔間距允許的範圍內。至少七成音窗通過才使用該段定位。此方法要求最大聲程差小於半個補償區塊，更換設備或陣列尺寸後需要重新驗證。補償量依音訊估計，持續漂移、反射與低訊號片段仍可能使驗證失敗。
 
 ## 持續節點啟動
 
@@ -181,7 +192,7 @@ ROS 套件在 WSL 執行並管理 Windows worker。需具備 ROS 2 Humble、rclp
 | Topic | 資料與條件 |
 | --- | --- |
 | /project_a/speaker/recognition | status、user_id、可用的分數或 reason，以及 timestamp、source。單獨聲紋模式也會提供資料。 |
-| /project_a/speaker/direction | status、azimuth_deg、可用的品質或 reason，以及 timestamp、source。無有效方向時角度為 null。 |
+| /project_a/speaker/direction | status、azimuth_deg、可用的 elevation_deg、absolute_elevation_deg、品質或 reason，以及 timestamp、source。若設定手臂座標，也發布 robot_yaw_deg、robot_ray_origin_m。無有效方向時角度為 null。 |
 | /project_a/speaker/identity | LLM 使用的五欄位資料。已確認講者才填 user_id，其他狀態送空字串。方向有效時送角度，其餘送 null。 |
 
 同一段發話一旦辨識成功，會沿用該講者 ID，直到連續一段時間沒有語音。兩人接話時若停頓未達設定秒數，會視為同一段。停止發話後，recognition 可繼續回報 held，表示上一位講者。下一段開始時，pending 表示語音累積中，unknown 表示相似度或分差未達門檻，兩者的 user_id 都是空字串。無可延續的講者時，安靜會回報 insufficient_speech。
@@ -198,7 +209,7 @@ LLM 只需訂閱 identity，以最新且三秒內的觀測決定講者。收到�
 
 Project A 接收端需支援 source=voice_detect，以及 azimuth_deg 為 [-180, 180] 內的數字或 null。公開的 feature/live-dialogue-monitor 分支仍只接受 source=mock 與有限角度。部署時請確認實際版本支援上述欄位。
 
-use_speaker_identity=true 時，以文字提交當下三秒內的最新觀測決定當輪身分，音訊片段的精確配對仍待整合。角度相對於麥克風陣列，location 保留空字串。交付區與手臂座標由後續系統定義。
+use_speaker_identity=true 時，以文字提交當下三秒內的最新觀測決定當輪身分，音訊片段的精確配對仍待整合。角度基準依量測模式而定，location 保留空字串。手臂控制端使用 direction 的底座方位。
 
 參考來源見 [Project A 身分驗證程式](https://github.com/Ktliu-Tyler/TM-LLM-Robot/blob/feature/live-dialogue-monitor/src/project_a_llm/project_a_llm/speaker_identity.py)。
 
@@ -210,9 +221,9 @@ record 支援一至四個輸入，長度 5～60 秒。devices 的順序決定 A/
 
 上列編號僅為三支操作範例，以當次 devices 清單替換。預設使用 WASAPI 獨佔模式，--shared 可供對照。每輪建立 runs 子資料夾，保存各軌 WAV 和 summary.json。summary 包含輸入數量、格式、裝置、開始時間、模式和串流旗標。
 
-calibrate、locate、analyze 接受三個或四個同取樣率、單聲道 WAV。校準聲程需逐檔對應。以下為三支範例，假定 1～10 秒為固定聲源校準段，12～15 秒為待測段。
+calibrate、locate、analyze 接受三個或四個同取樣率、單聲道 WAV。以下為使用 config/array.json 的三支範例，假定 1～10 秒為固定聲源校準段，12～15 秒為待測段。已有逐孔量測聲程時，calibrate 也接受 `--distances`，依音軌順序填寫。
 
-    .\voice.cmd calibrate --files runs/demo/A.wav runs/demo/B.wav runs/demo/C.wav --start 1 --end 10 --distances 1 1 1 --output runs/demo/clock.json
+    .\voice.cmd calibrate --files runs/demo/A.wav runs/demo/B.wav runs/demo/C.wav --start 1 --end 10 --output runs/demo/clock.json
     .\voice.cmd locate --files runs/demo/A.wav runs/demo/B.wav runs/demo/C.wav --calibration runs/demo/clock.json --start 12 --end 15
     .\voice.cmd analyze --files runs/demo/A.wav runs/demo/B.wav runs/demo/C.wav --calibration runs/demo/clock.json --start 12 --end 15 --output runs/demo/analysis.json
 

@@ -1,0 +1,4 @@
+{
+  "status": "invalid_for_acoustic_calibration",
+  "reason": "User confirmed playback had not started. Do not use this recording for calibration."
+}

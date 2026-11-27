@@ -1,0 +1,117 @@
+{
+  "tracks": [
+    {
+      "track": "A",
+      "segments": {
+        "noise_early": {
+          "recording_interval_seconds": [
+            18,
+            20
+          ],
+          "rms_dbfs": -49.3,
+          "digital_zero_percent": 0.73
+        },
+        "noise_late": {
+          "recording_interval_seconds": [
+            24,
+            27
+          ],
+          "rms_dbfs": -78.3,
+          "digital_zero_percent": 61.78
+        },
+        "sweep_early": {
+          "recording_interval_seconds": [
+            32,
+            34
+          ],
+          "rms_dbfs": -51.5,
+          "digital_zero_percent": 10.16
+        },
+        "sweep_late": {
+          "recording_interval_seconds": [
+            37,
+            40
+          ],
+          "rms_dbfs": -52.2,
+          "digital_zero_percent": 6.3
+        }
+      }
+    },
+    {
+      "track": "B",
+      "segments": {
+        "noise_early": {
+          "recording_interval_seconds": [
+            18,
+            20
+          ],
+          "rms_dbfs": -58.0,
+          "digital_zero_percent": 12.01
+        },
+        "noise_late": {
+          "recording_interval_seconds": [
+            24,
+            27
+          ],
+          "rms_dbfs": null,
+          "digital_zero_percent": 100.0
+        },
+        "sweep_early": {
+          "recording_interval_seconds": [
+            32,
+            34
+          ],
+          "rms_dbfs": -54.3,
+          "digital_zero_percent": 14.82
+        },
+        "sweep_late": {
+          "recording_interval_seconds": [
+            37,
+            40
+          ],
+          "rms_dbfs": -53.7,
+          "digital_zero_percent": 12.15
+        }
+      }
+    },
+    {
+      "track": "C",
+      "segments": {
+        "noise_early": {
+          "recording_interval_seconds": [
+            18,
+            20
+          ],
+          "rms_dbfs": -51.8,
+          "digital_zero_percent": 1.26
+        },
+        "noise_late": {
+          "recording_interval_seconds": [
+            24,
+            27
+          ],
+          "rms_dbfs": -137.1,
+          "digital_zero_percent": 100.0
+        },
+        "sweep_early": {
+          "recording_interval_seconds": [
+            32,
+            34
+          ],
+          "rms_dbfs": -52.2,
+          "digital_zero_percent": 10.43
+        },
+        "sweep_late": {
+          "recording_interval_seconds": [
+            37,
+            40
+          ],
+          "rms_dbfs": -52.8,
+          "digital_zero_percent": 7.06
+        }
+      }
+    }
+  ],
+  "alignment": "Approximate intervals selected from the shared onset near 17 s and sustained sweep near 31–40 s. Periodic sweep correlation gives ambiguous offsets and is not used.",
+  "interpretation": "Stationary noise decays at different rates across tracks while changing sweeps remain detectable. Adaptive suppression in the capture chain is suspected; the responsible hardware/software layer is unconfirmed."
+}

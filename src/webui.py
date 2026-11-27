@@ -86,6 +86,7 @@ class Workbench:
     def bootstrap(self):
         config = optional_json(ROOT / "config" / "live.json")
         geometry = optional_json(ROOT / config.get("array_config", "config/array.json"))
+        robot_base = "robot_base_positions_mm" in geometry
         database = ROOT / config.get("database", "data/speakers.json")
         tests = sorted(RUNS.glob("*_speaker_test/speakers.json"), reverse=True)
         if not database.is_file() and tests:
@@ -99,12 +100,23 @@ class Workbench:
                      cal_start=1, cal_end=9, test_start=15, test_end=23, expected="",
                      extrapolation=geometry.get("max_extrapolation_seconds", 30),
                      measured=geometry.get("geometry_measured", False),
-                     positions=geometry.get("positions_m", []),
+                     coordinate_mode="robot_base_mm" if robot_base else "array_m",
+                     positions=geometry.get("robot_base_positions_mm" if robot_base else "positions_m", []),
+                     calibration_source=geometry.get("robot_base_calibration_source_mm" if robot_base
+                                                     else "calibration_source_m"),
+                     geometry_drafts={},
+                     clock_jump_samples=geometry.get("clock_jump_samples", 0),
+                     robot_frame=geometry.get("robot_frame"),
                      distances=config.get("calibration_distances_m", []),
                      devices=config.get("devices", []))
         for key, defaults in (("speaker", speaker), ("array", array)):
             previous = saved.get(key, {})
             if isinstance(previous, dict):
+                if key == "array" and "coordinate_mode" not in previous:
+                    if any(value not in (None, "") for point in previous.get("positions", [])
+                           if isinstance(point, list) for value in point):
+                        previous = dict(previous, coordinate_mode="array_m",
+                                        calibration_source=previous.get("calibration_source_m"))
                 defaults.update({key: previous[key] for key in defaults.keys() & previous.keys()})
         return dict(token=self.token, speaker=speaker, array=array,
                     page="array" if saved.get("page") == "array" else "speaker",
@@ -220,14 +232,35 @@ class Workbench:
             if data.get("measured") is not True:
                 raise ValueError("請量測並填入麥克風座標後，勾選「座標已量測」")
             count = mic_count(data.get("count"))
-            positions = [[number(value, f"{label} 的 {axis} 座標", -100, 100)
-                          for axis, value in zip("XY", pair)]
+            coordinate_mode = data.get("coordinate_mode", "array_m")
+            if coordinate_mode not in ("robot_base_mm", "array_m"):
+                raise ValueError("請選擇座標格式")
+            robot_base = coordinate_mode == "robot_base_mm"
+            limit = 100_000 if robot_base else 100
+            positions = [[number(value, f"{label} 的 {axis} 座標", -limit, limit)
+                          for axis, value in zip("XYZ", pair)]
                          for label, pair in zip("ABCD"[:count], data["positions"])]
-            distances = [number(distance, f"{label} 的校準聲程", .001, 100)
-                         for label, distance in zip("ABCD"[:count], data["distances"])]
+            source = data.get("calibration_source", data.get("calibration_source_m"))
+            distances = None
+            geometry = dict(geometry_measured=True,
+                            clock_jump_samples=number(data.get("clock_jump_samples", 0),
+                                                      "時間跳變取樣數", 0, 65536, integer=True),
+                            max_extrapolation_seconds=number(data.get("extrapolation"), "外推上限", 0, 3600))
+            if robot_base:
+                geometry["robot_base_positions_mm"] = positions
+            else:
+                geometry.update(positions_m=positions, robot_frame=data.get("robot_frame"))
+            if source is not None and any(value not in (None, "") for value in source):
+                if len(source) != 3:
+                    raise ValueError("請填入校準喇叭的 X、Y、Z 座標")
+                source_key = "robot_base_calibration_source_mm" if robot_base else "calibration_source_m"
+                geometry[source_key] = [number(value, f"校準喇叭的 {axis} 座標", -limit, limit)
+                                        for axis, value in zip("XYZ", source)]
+            else:
+                distances = [number(distance, f"{label} 的校準聲程", .001, 100)
+                             for label, distance in zip("ABCD"[:count], data["distances"])]
             expected = data.get("expected")
             expected = None if expected in (None, "") else number(expected, "真值角度", -180, 180)
-            extrapolation = number(data.get("extrapolation"), "外推上限", 0, 3600)
             ids = data["tracks"][:count]
             if len(ids) != count or len(set(ids)) != count:
                 raise ValueError(f"請為 A～{'ABCD'[count - 1]} 指定 {count} 軌不同的 WAV")
@@ -240,8 +273,7 @@ class Workbench:
                 folder = Path(mkdtemp(prefix="array-", dir=self.scratch))
                 for label, path in zip("ABCD", paths):
                     shutil.copyfile(path, folder / f"{label}.wav")
-            result, clock, output = localize_run(folder, count, positions, distances, *spans,
-                                                extrapolation, expected)
+            result, clock, output = localize_run(folder, count, geometry, distances, *spans, expected)
             return dict(result=result, clock=clock, folder=str(output),
                         output=self.register_file(output / "direction.json"),
                         calibration=self.register_file(output / "clock.json"))

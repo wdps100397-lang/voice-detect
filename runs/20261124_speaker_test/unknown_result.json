@@ -1,0 +1,28 @@
+{
+  "detected_speech_seconds": 6.96,
+  "clip_seconds": [
+    18,
+    27
+  ],
+  "amplitude_multiplier": 2,
+  "raw": {
+    "status": "unknown",
+    "user_id": "",
+    "score": 0.109878253752353,
+    "score_gap": 2.0,
+    "threshold": 0.65,
+    "scores": {
+      "voice_test_01": 0.109878253752353
+    }
+  },
+  "cropped": {
+    "status": "unknown",
+    "user_id": "",
+    "score": 0.10901791289662198,
+    "score_gap": 2.0,
+    "threshold": 0.65,
+    "scores": {
+      "voice_test_01": 0.10901791289662198
+    }
+  }
+}

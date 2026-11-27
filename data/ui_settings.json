@@ -1,0 +1,73 @@
+{
+  "speaker": {
+    "database": "C:\\Users\\王翊丞\\Desktop\\TMrobot\\voice_detect\\runs\\20261124_speaker_test\\speakers.json",
+    "device": "36 · 麥克風 (USBAudio2.0)",
+    "mode": "獨佔",
+    "duration": "8",
+    "countdown": "3",
+    "gain": "0",
+    "threshold": "0.65",
+    "margin": "0.08",
+    "name": "",
+    "append_id": "李博士",
+    "append_database": "C:\\Users\\王翊丞\\Desktop\\TMrobot\\voice_detect\\runs\\20261124_speaker_test\\speakers.json"
+  },
+  "array": {
+    "count": "4",
+    "mode": "獨佔",
+    "rate": "48000",
+    "duration": "15",
+    "countdown": "3",
+    "cal_start": "1",
+    "cal_end": "7",
+    "test_start": "10",
+    "test_end": "13",
+    "extrapolation": "30",
+    "expected": "",
+    "devices": [
+      "36 · 麥克風 (USBAudio2.0)",
+      "35 · 麥克風 (4- USBAudio2.0)",
+      "33 · 麥克風 (5- USBAudio2.0)",
+      "30 · 麥克風 (USBAudio2.0)"
+    ],
+    "coordinate_mode": "array_m",
+    "measured": true,
+    "positions": [
+      [
+        "0.1555",
+        "0.11",
+        "0"
+      ],
+      [
+        "-0.1555",
+        "0.11",
+        "0"
+      ],
+      [
+        "-0.1555",
+        "-0.11",
+        "0"
+      ],
+      [
+        "0.1555",
+        "-0.11",
+        "0"
+      ]
+    ],
+    "calibration_source": [
+      "0.155",
+      "0.310",
+      "0"
+    ],
+    "robot_frame": null,
+    "distances": [
+      "1",
+      "1",
+      "1",
+      "1"
+    ],
+    "geometry_drafts": {}
+  },
+  "page": "speaker",
+  "revision": 1795601745092
+}

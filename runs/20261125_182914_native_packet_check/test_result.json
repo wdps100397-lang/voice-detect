@@ -1,0 +1,54 @@
+{
+  "status": "failed_temporal_stability",
+  "recording_seconds": 40,
+  "calibration_source_m": [
+    0.155,
+    0.31,
+    0
+  ],
+  "expected_nominal_azimuth_deg": -26.56505117707799,
+  "source_stationary_as_instructed": true,
+  "known_noise_windows": 77,
+  "tested_noise_windows": 78,
+  "native_packet_gap_counts": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "native_flagged_packet_counts": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "first_detected_large_jump_seconds": 17.25,
+  "first_large_jump_residual_samples": [
+    256.0171617535254,
+    255.9015648143678,
+    256.04689443519095
+  ],
+  "quantized_jump_samples": 256,
+  "quantized_jump_ms": 5.333333333333333,
+  "experimental_packet_recovery": {
+    "calibration_interval": [
+      9,
+      15
+    ],
+    "calibration_residual_us": [
+      0.0,
+      7.3523652882184765,
+      7.567747493733351,
+      7.415021929824909
+    ],
+    "accepted_windows": 46,
+    "tested_windows": 47,
+    "azimuth_range_deg": [
+      -41.8,
+      -18.8
+    ],
+    "maximum_error_relative_nominal_deg": 15.234948822922007
+  },
+  "conclusion": "The direct WASAPI capture still contains quantized acoustic timing jumps despite contiguous device positions and zero discontinuity flags. Device timing alone did not resolve synchronization. Experimental 256-sample correction is insufficient for precise continuous localization. This same-source test does not establish independent angular accuracy.",
+  "production_capture_changed": false
+}

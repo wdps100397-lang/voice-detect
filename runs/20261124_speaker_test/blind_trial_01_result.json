@@ -1,0 +1,31 @@
+{
+  "clip_seconds": [
+    20,
+    28
+  ],
+  "detected_speech_seconds": 5.4,
+  "amplitude_multiplier": 2,
+  "raw": {
+    "status": "unknown",
+    "user_id": "",
+    "score": 0.5395373409621851,
+    "score_gap": 0.22220926464510654,
+    "threshold": 0.65,
+    "scores": {
+      "voice_test_01": 0.5395373409621851,
+      "voice_test_02": 0.31732807631707854
+    }
+  },
+  "cropped": {
+    "status": "recognized",
+    "user_id": "voice_test_01",
+    "score": 0.7169131755502434,
+    "score_gap": 0.49015486334538017,
+    "threshold": 0.65,
+    "scores": {
+      "voice_test_01": 0.7169131755502434,
+      "voice_test_02": 0.22675831220486323
+    }
+  },
+  "confirmed_user_id": "voice_test_01"
+}

@@ -5,6 +5,7 @@ const value = id => el(id).value;
 const set = (id, val) => { el(id).value = val ?? ""; };
 const text = (id, str) => { el(id).textContent = str; };
 const labels = ["A", "B", "C", "D"];
+const axes = ["x", "y", "z"];
 const speakerKeys = ["database", "device", "mode", "duration", "countdown", "gain", "threshold", "margin"];
 const arrayKeys = ["count", "mode", "rate", "duration", "countdown", "cal_start", "cal_end",
   "test_start", "test_end", "extrapolation", "expected"];
@@ -18,6 +19,10 @@ let initialized = false;
 let busy = false;
 let samples = [];
 let tracks = [null, null, null, null];
+let robotFrame = null;
+let clockJumpSamples = 0;
+let coordinateMode = "robot_base_mm";
+let geometryDrafts = {};
 
 async function api(path, data, file) {
   const options = {};
@@ -88,11 +93,20 @@ function tab(nextPage) {
 function settings() {
   const speaker = Object.fromEntries(speakerKeys.map(key => [key, value("s-" + key)]));
   const array = Object.fromEntries(arrayKeys.map(key => [key, value("a-" + key)]));
-  array.measured = el("a-measured").checked;
   array.devices = labels.map(label => value("mic-" + label));
-  array.positions = labels.map(label => [value("x-" + label), value("y-" + label)]);
-  array.distances = labels.map(label => value("distance-" + label));
-  return { speaker, array };
+  return { speaker, array: { ...array, ...geometryFields() } };
+}
+
+function geometryFields() {
+  return {
+    coordinate_mode: coordinateMode,
+    measured: el("a-measured").checked,
+    positions: labels.map(label => axes.map(axis => value(axis + "-" + label))),
+    calibration_source: axes.map(axis => value("a-source-" + axis)),
+    robot_frame: robotFrame,
+    clock_jump_samples: clockJumpSamples,
+    distances: labels.map(label => value("distance-" + label))
+  };
 }
 
 function saveDevice(id) {
@@ -119,6 +133,7 @@ async function persistSettings() {
   saved.speaker.append_id = appendTarget?.id || "";
   saved.speaker.append_database = appendTarget?.database || "";
   saved.array.devices = labels.map(label => saveDevice("mic-" + label));
+  saved.array.geometry_drafts = geometryDrafts;
   const current = revision = Math.max(Date.now(), revision + 1);
   try {
     await api("settings", { ...saved, page, revision: current });
@@ -134,14 +149,37 @@ async function persistSettings() {
 function applySettings(speaker, array) {
   speakerKeys.filter(key => key !== "device").forEach(key => set("s-" + key, speaker[key]));
   arrayKeys.forEach(key => set("a-" + key, array[key]));
-  el("a-measured").checked = array.measured === true;
   set("enroll-id", speaker.name);
-  labels.forEach((label, i) => {
-    set("x-" + label, array.positions?.[i]?.[0]);
-    set("y-" + label, array.positions?.[i]?.[1]);
-    set("distance-" + label, array.distances?.[i]);
-  });
+  geometryDrafts = array.geometry_drafts || {};
+  applyGeometry(array);
   countChanged();
+}
+
+function applyGeometry({ coordinate_mode, measured, positions, calibration_source, robot_frame, distances,
+  clock_jump_samples }) {
+  coordinateMode = coordinate_mode === "array_m" ? "array_m" : "robot_base_mm";
+  set("a-coordinate-mode", coordinateMode);
+  const robotBase = coordinateMode === "robot_base_mm";
+  const unit = robotBase ? "mm" : "m";
+  text("a-coordinate-note", robotBase
+    ? "在 TMflow 選 RobotBase 和已校正的量測 TCP，直接填收音孔中心的 X、Y、Z。"
+    : "沿用陣列原點，X 朝右、Y 朝前、Z 朝上。喇叭和收音孔使用同一基準。");
+  axes.forEach((axis, i) => {
+    const label = axis.toUpperCase() + "（" + unit + "）";
+    text("a-axis-" + axis, label);
+    text("a-source-label-" + axis, "校準喇叭 " + label);
+    set("a-source-" + axis, calibration_source?.[i]);
+  });
+  labels.forEach((label, i) => {
+    const point = positions?.[i];
+    axes.forEach((axis, index) => {
+      set(axis + "-" + label, !robotBase && index === 2 && point?.length === 2 ? 0 : point?.[index]);
+    });
+    set("distance-" + label, distances?.[i]);
+  });
+  el("a-measured").checked = measured === true;
+  robotFrame = robotBase ? null : robot_frame ?? null;
+  clockJumpSamples = clock_jump_samples ?? 0;
 }
 
 function createMicRows() {
@@ -153,10 +191,10 @@ function createMicRows() {
     select.id = "mic-" + label;
     select.setAttribute("aria-label", label + " 麥克風");
     row.insertCell().append(select);
-    for (const [key, type] of [["x", "X 座標"], ["y", "Y 座標"], ["distance", "校準聲程"]]) {
+    for (const [key, type] of [["x", "X 座標"], ["y", "Y 座標"], ["z", "Z 座標"], ["distance", "校準聲程"]]) {
       const input = document.createElement("input");
       input.type = "number";
-      input.step = "0.001";
+      input.step = key === "distance" ? "0.001" : "any";
       input.id = key + "-" + label;
       input.setAttribute("aria-label", label + " " + type);
       row.insertCell().append(input);
@@ -449,7 +487,8 @@ document.querySelectorAll("[data-page]").forEach(button => button.addEventListen
 const deviceInputs = new Set(["s-device", ...labels.map(label => "mic-" + label)]);
 const settingInputs = new Set([...speakerKeys.map(key => "s-" + key), ...arrayKeys.map(key => "a-" + key),
   "enroll-id", "a-measured", ...deviceInputs,
-  ...labels.flatMap(label => ["x-" + label, "y-" + label, "distance-" + label])]);
+  ...axes.map(axis => "a-source-" + axis),
+  ...labels.flatMap(label => [...axes, "distance"].map(key => key + "-" + label))]);
 for (const eventName of ["input", "change"]) {
   document.addEventListener(eventName, event => {
     const id = event.target.id;
@@ -465,6 +504,12 @@ window.addEventListener("pagehide", persistSettings);
 new ResizeObserver(redraw).observe(el("speaker").parentElement);
 new ResizeObserver(drawWave).observe(el("waveform").parentElement);
 el("a-count").addEventListener("change", countChanged);
+el("a-coordinate-mode").addEventListener("change", () => {
+  const mode = value("a-coordinate-mode");
+  geometryDrafts[coordinateMode] = geometryFields();
+  applyGeometry({ ...geometryDrafts[mode], coordinate_mode: mode });
+  settingsChanged(true);
+});
 ["s-start", "s-end"].forEach(id => el(id).addEventListener("input", drawWave));
 
 const wave = el("waveform");
@@ -622,17 +667,27 @@ el("a-geometry").addEventListener("change", event => {
   if (!file) return;
   action(async () => {
     const data = JSON.parse(await file.text());
-    const positions = data.positions_m;
-    if (![3, 4].includes(positions?.length) || positions.some(pair => !Array.isArray(pair)
-      || pair.length !== 2 || pair.some(coordinate => !Number.isFinite(coordinate)))) {
-      throw new Error("座標 JSON 需要三或四組 positions_m，每組含 X 和 Y");
+    const robotBase = "robot_base_positions_mm" in data;
+    const mode = robotBase ? "robot_base_mm" : "array_m";
+    const positions = robotBase ? data.robot_base_positions_mm : data.positions_m;
+    const dimensions = robotBase ? [3] : [2, 3];
+    if (!Array.isArray(positions) || ![3, 4].includes(positions.length) || positions.some(point =>
+      !Array.isArray(point) || !dimensions.includes(point.length)
+      || point.some(coordinate => coordinate !== null && !Number.isFinite(coordinate)))) {
+      throw new Error("座標 JSON 需要依 A～D 排序的三或四組座標");
     }
-    set("a-count", positions.length);
-    labels.forEach((label, i) => {
-      set("x-" + label, positions[i]?.[0]);
-      set("y-" + label, positions[i]?.[1]);
+    const threeMeasured = data.geometry_measured === true && positions[3]?.every(coordinate => coordinate === null);
+    set("a-count", threeMeasured ? 3 : positions.length);
+    geometryDrafts[coordinateMode] = geometryFields();
+    applyGeometry({
+      coordinate_mode: mode,
+      measured: data.geometry_measured,
+      positions,
+      calibration_source: robotBase ? data.robot_base_calibration_source_mm : data.calibration_source_m,
+      robot_frame: data.robot_frame,
+      clock_jump_samples: data.clock_jump_samples,
+      distances: geometryDrafts[mode]?.distances
     });
-    el("a-measured").checked = data.geometry_measured === true;
     set("a-extrapolation", data.max_extrapolation_seconds ?? 30);
     countChanged();
     settingsChanged(true);
@@ -691,11 +746,20 @@ click("direction", async () => {
   const { result, clock } = data;
   direction = result.azimuth_deg;
   drawCompass();
-  text("angle", direction != null ? signed(direction) : result.status === "ambiguous" ? "方向不明確" : "沒有可用訊號");
+  text("angle", direction != null ? signed(direction)
+    : result.status === "error" ? "錄音同步檢查失敗"
+    : result.status === "ambiguous" ? "方向不明確" : "沒有可用訊號");
   const details = [];
+  if (result.reason) details.push(result.reason);
   if (result.absolute_error_deg != null) {
     details.push("真值 " + signed(result.expected_azimuth_deg) + " · 誤差 " + result.absolute_error_deg.toFixed(2) + "°");
   }
+  if (result.elevation_deg != null) {
+    details.push("仰角 " + signed(result.elevation_deg));
+  } else if (result.absolute_elevation_deg != null) {
+    details.push("仰角大小 " + result.absolute_elevation_deg.toFixed(1) + "°");
+  }
+  if (result.robot_yaw_deg != null) details.push("手臂底座方位 " + signed(result.robot_yaw_deg));
   if (result.peak_margin != null) details.push("峰值分差 " + result.peak_margin.toFixed(3) + " · 音窗 " + result.windows + " 個");
   details.push("校準殘差 P95（ms） " + clock.channels.slice(1).map((channel, index) =>
     labels[index + 1] + " " + (channel.residual_p95_seconds * 1000).toFixed(3)).join(" · "));
@@ -703,7 +767,8 @@ click("direction", async () => {
   el("direction-download").href = data.output.url;
   el("clock-download").href = data.calibration.url;
   el("direction-downloads").hidden = false;
-  status("定位完成 · " + data.folder);
+  status((result.status === "error" ? "請重新錄音 · " : "定位完成 · ") + data.folder,
+    { error: result.status === "error" });
 });
 
 async function init() {

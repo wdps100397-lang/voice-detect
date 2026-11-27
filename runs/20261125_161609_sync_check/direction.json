@@ -1,0 +1,8 @@
+{
+  "status": "error",
+  "azimuth_deg": null,
+  "elevation_deg": null,
+  "absolute_elevation_deg": null,
+  "windows": 80,
+  "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+}

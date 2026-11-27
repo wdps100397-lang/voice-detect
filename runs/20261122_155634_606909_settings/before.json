@@ -1,0 +1,29 @@
+[
+  {
+    "id": "{0.0.1.00000000}.{10292e93-dbfa-4644-8a1a-fddfbfed094e}",
+    "name": "麥克風 (USBAudio2.0)",
+    "agc": 0,
+    "volume_db": -1.9921875,
+    "mute": 0,
+    "sysfx_vt": 19,
+    "sysfx_value": 1
+  },
+  {
+    "id": "{0.0.1.00000000}.{1b064b12-4a55-42e9-85b3-9b064c37ac9f}",
+    "name": "麥克風 (3- USBAudio2.0)",
+    "agc": 0,
+    "volume_db": -1.9921875,
+    "mute": 0,
+    "sysfx_vt": 19,
+    "sysfx_value": 1
+  },
+  {
+    "id": "{0.0.1.00000000}.{d218fbca-c6a4-4c20-b0d7-683f2ae7a48d}",
+    "name": "麥克風 (2- USBAudio2.0)",
+    "agc": 0,
+    "volume_db": -1.9921875,
+    "mute": 0,
+    "sysfx_vt": 19,
+    "sysfx_value": 1
+  }
+]

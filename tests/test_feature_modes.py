@@ -88,8 +88,10 @@ class FeatureModeTests(unittest.TestCase):
     def test_default_four_microphone_localization_without_speaker_model(self):
         config = dict(devices=[1, 2, 3, 4], sample_rate_hz=16000,
                       enable_speaker_recognition=False, enable_localization=True,
-                      array_config="array.json", calibration_distances_m=[1] * 4)
-        geometry = dict(geometry_measured=True, positions_m=[[-.1, -.1], [.1, -.1], [.1, .1], [-.1, .1]])
+                      array_config="array.json")
+        geometry = dict(geometry_measured=True, positions_m=[[-.1, -.1, 0], [.1, -.1, 0], [.1, .1, 0], [-.1, .1, .1]],
+                        calibration_source_m=[0, 1, .2],
+                        robot_frame=dict(array_origin_m=[0, 0, .6], yaw_offset_deg=20))
         capture = Mock()
         capture.started_at = 100.
         capture.snapshots.return_value = [(0, np.zeros(16000 * 9))] * 4
@@ -100,10 +102,17 @@ class FeatureModeTests(unittest.TestCase):
             run_live("config.json", events.append, Mock(side_effect=[False, False, True]))
         model.assert_not_called()
         self.assertEqual(len(fit.call_args.args[0]), 4)
+        np.testing.assert_allclose(fit.call_args.args[4],
+                                   np.linalg.norm(np.array(geometry["positions_m"]) - geometry["calibration_source_m"],
+                                                  axis=1))
         self.assertEqual(cls.call_args.args[0], [1, 2, 3, 4])
         identity = [row["data"] for row in events if row["kind"] == "identity"][0]
         self.assertEqual(identity["user_id"], "")
         self.assertEqual(identity["azimuth_deg"], 45)
+        features = [row["data"] for row in events if row["kind"] == "features"][0]
+        messages = ros_node.topic_messages(features)
+        self.assertEqual(messages[ros_node.DIRECTION_TOPIC]["robot_yaw_deg"], 65)
+        self.assertEqual(messages[ros_node.TOPIC]["azimuth_deg"], 45)
 
     def test_feature_mailbox_keeps_disabled_state_explicit(self):
         mailbox = ros_node.FeatureMailbox()

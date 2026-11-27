@@ -6,7 +6,7 @@ import numpy as np
 from scipy.io import wavfile
 
 from src.common import save_json
-from src.localization import calibration, direction, locate, fit_clock
+from src.localization import align_tracks, calibration, direction, locate, fit_clock
 from src.speakers import SpeakerEngine, speech_audio, filterbank
 
 
@@ -15,13 +15,15 @@ class PipelineTests(unittest.TestCase):
         self.rate = 48000
         self.positions = np.array([[-.1, -.057735], [.1, -.057735], [0, .11547]])
 
-    def signals(self, angle, seconds=1, offsets=None, drifts=None):
+    def signals(self, angle, seconds=1, offsets=None, drifts=None, *, elevation=0):
         rate = self.rate
         times = np.arange(int(seconds * rate)) / rate
         source_times = np.arange(-rate, int((seconds + 1) * rate)) / rate
         noise = np.random.default_rng(42).normal(0, .05, len(source_times))
-        vector = np.array([-np.sin(np.deg2rad(angle)), np.cos(np.deg2rad(angle))])
-        arrivals = -(self.positions @ vector) / 343
+        azimuth, elevation = np.deg2rad([angle, elevation])
+        vector = np.array([-np.sin(azimuth) * np.cos(elevation),
+                           np.cos(azimuth) * np.cos(elevation), np.sin(elevation)])
+        arrivals = -(self.positions @ vector[:self.positions.shape[1]]) / 343
         offsets = np.zeros(len(self.positions)) if offsets is None else offsets
         drifts = np.zeros(len(self.positions)) if drifts is None else drifts
         return [np.interp(times - delay - offset - drift * times, source_times, noise)
@@ -38,6 +40,37 @@ class PipelineTests(unittest.TestCase):
         result = direction([np.zeros(self.rate)] * 3, self.rate, self.positions)
         self.assertIsNone(result["azimuth_deg"])
 
+    def test_level_array_reports_azimuth_with_elevation_and_mirror_ambiguity(self):
+        self.positions = np.array([[-.1, -.1, 0], [.1, -.1, 0], [.1, .1, 0], [-.1, .1, 0]])
+        for elevation in (25, 55, -55):
+            with self.subTest(elevation=elevation):
+                result = direction(self.signals(38.4, elevation=elevation), self.rate, self.positions)
+                self.assertEqual(result["status"], "ok")
+                self.assertAlmostEqual(result["azimuth_deg"], 38.4, delta=1)
+                self.assertAlmostEqual(result["absolute_elevation_deg"], abs(elevation), delta=2)
+                self.assertIsNone(result["elevation_deg"])
+
+    def test_raised_microphone_resolves_signed_elevation(self):
+        self.positions = np.array([[-.1, -.1, 0], [.1, -.1, 0], [.1, .1, 0], [-.1, .1, .1]])
+        for elevation in (45, -45):
+            with self.subTest(elevation=elevation):
+                result = direction(self.signals(-127.4, elevation=elevation), self.rate, self.positions)
+                self.assertEqual(result["status"], "ok")
+                self.assertAlmostEqual(result["azimuth_deg"], -127.4, delta=1)
+                self.assertAlmostEqual(result["elevation_deg"], elevation, delta=2)
+
+    def test_no_horizontal_angle_for_a_source_overhead(self):
+        self.positions = np.array([[-.1, -.1, 0], [.1, -.1, 0], [.1, .1, 0], [-.1, .1, .1]])
+        result = direction(self.signals(38.4, elevation=90), self.rate, self.positions)
+        self.assertEqual(result["status"], "ambiguous")
+        self.assertIsNone(result["azimuth_deg"])
+
+    def test_tilted_plane_with_distinct_mirror_azimuths_is_ambiguous(self):
+        self.positions = np.array([[-.1, -.1, -.05], [.1, -.1, .05], [.1, .1, .05], [-.1, .1, -.05]])
+        result = direction(self.signals(38.4, elevation=45), self.rate, self.positions)
+        self.assertEqual(result["status"], "ambiguous")
+        self.assertIsNone(result["azimuth_deg"])
+
     def test_four_microphone_clock_drift(self):
         self.rate = 16000
         self.positions = np.vstack([self.positions, [-.1, .11547]])
@@ -48,6 +81,48 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(len(result["channels"]), 4)
         self.assertAlmostEqual(result["channels"][3]["offset_seconds"], .02, delta=.00005)
         self.assertAlmostEqual(result["channels"][3]["drift"], 25e-6, delta=10e-6)
+
+    def test_calibration_with_fast_usb_clock_drift(self):
+        offsets = [0, .013, -.008]
+        drifts = [0, -1130e-6, -520e-6]
+        tracks = self.signals(0, 10, offsets, drifts)
+        clock = fit_clock(tracks, self.rate, 1, 9, (2 - self.positions[:, 1]).tolist())
+        for index in (1, 2):
+            self.assertAlmostEqual(clock["channels"][index]["drift"], drifts[index], delta=10e-6)
+            self.assertLess(clock["channels"][index]["residual_p95_seconds"], .0001)
+
+    def test_recording_time_jump_is_not_reported_as_a_valid_direction(self):
+        audio = self.signals(90)
+        audio[0] = np.roll(audio[0], round(.0053 * self.rate))
+        result = direction(audio, self.rate, self.positions)
+        self.assertEqual(result["status"], "error")
+        self.assertIsNone(result["azimuth_deg"])
+        self.assertIn("時間差", result["reason"])
+
+    def test_packet_recovery_preserves_a_new_source_direction(self):
+        self.positions = np.array([[-.1, -.1, 0], [.1, -.1, 0], [.1, .1, 0], [-.1, .1, .1]])
+        clock = dict(channels=[dict(offset_seconds=0., drift=0.) for _ in range(4)])
+        for angle, jumped_channel, removed in [(37, 0, True), (-64, 2, False)]:
+            with self.subTest(angle=angle):
+                tracks = self.signals(angle, seconds=8, elevation=20)
+                channel = tracks[jumped_channel]
+                cut, packet = 5 * self.rate, 256
+                if removed:
+                    tracks[jumped_channel] = np.r_[channel[:cut], channel[cut + packet:], np.zeros(packet)]
+                else:
+                    tracks[jumped_channel] = np.r_[channel[:cut], np.zeros(packet), channel[cut:-packet]]
+                audio, sync = align_tracks(tracks, self.rate, clock, 6, 7,
+                                           positions=self.positions, packet_samples=packet)
+                result = direction(audio, self.rate, self.positions)
+                self.assertEqual(result["status"], "ok")
+                self.assertAlmostEqual(result["azimuth_deg"], angle, delta=2)
+                self.assertEqual(sync["valid_frames"], sync["total_frames"])
+
+    def test_packet_recovery_rejects_ambiguous_array_size(self):
+        clock = dict(channels=[dict(offset_seconds=0., drift=0.) for _ in range(3)])
+        with self.assertRaisesRegex(ValueError, "Array is too large"):
+            align_tracks(self.signals(30, seconds=2), self.rate, clock, .5, 1.5,
+                         positions=self.positions * 10, packet_samples=256)
 
     def test_calibration_through_files(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -1,0 +1,75 @@
+[
+  {
+    "calibration_interval_seconds": [
+      2,
+      8
+    ],
+    "nominal_azimuth_deg": -26.56505117707799,
+    "calibration": "ok",
+    "residual_ms": [
+      0.0148,
+      0.0144,
+      0.0088
+    ],
+    "drift_ppm": [
+      -1135.1,
+      -496.8,
+      -629.7
+    ],
+    "validation": {
+      "status": "ok",
+      "azimuth_deg": -24.7,
+      "elevation_deg": null,
+      "absolute_elevation_deg": 39.8,
+      "best_candidate_azimuth_deg": -24.7,
+      "peak_margin": 0.37317530941560556,
+      "windows": 20,
+      "interval_seconds": [
+        8,
+        10
+      ],
+      "nominal_absolute_error_deg": 1.8650511770779872
+    }
+  },
+  {
+    "calibration_interval_seconds": [
+      9,
+      15
+    ],
+    "nominal_azimuth_deg": -26.56505117707799,
+    "calibration": "ok",
+    "residual_ms": [
+      0.0214,
+      0.0645,
+      0.0095
+    ],
+    "drift_ppm": [
+      -1138.0,
+      -493.5,
+      -620.1
+    ],
+    "validation": {
+      "status": "ok",
+      "azimuth_deg": -24.0,
+      "elevation_deg": null,
+      "absolute_elevation_deg": 40.5,
+      "best_candidate_azimuth_deg": -24.0,
+      "peak_margin": 0.3758567430491826,
+      "windows": 20,
+      "interval_seconds": [
+        15,
+        17
+      ],
+      "nominal_absolute_error_deg": 2.565051177077976
+    }
+  },
+  {
+    "calibration_interval_seconds": [
+      16,
+      22
+    ],
+    "nominal_azimuth_deg": -26.56505117707799,
+    "calibration": "failed",
+    "reason": "B 與 A 的錄音時間校準不穩（殘差 2.517 ms）。請將喇叭固定在校準位置持續播放沙沙聲，重新錄音。"
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "tracks": [
+    {
+      "track": "A",
+      "loudest_20s_start": 2.5,
+      "central_rms_dbfs": -90.51005464590577,
+      "central_100ms_p10_dbfs": -90.30899869919436,
+      "central_100ms_p90_dbfs": -90.30899869919436,
+      "central_zero_percent": 97.57621527777778,
+      "central_100ms_below_one_tenth_median": 0
+    },
+    {
+      "track": "B",
+      "loudest_20s_start": 0.0,
+      "central_rms_dbfs": -108.7936616426996,
+      "central_100ms_p10_dbfs": -90.30899869919436,
+      "central_100ms_p90_dbfs": -90.30899869919436,
+      "central_zero_percent": 99.7,
+      "central_100ms_below_one_tenth_median": 0
+    },
+    {
+      "track": "C",
+      "loudest_20s_start": 0.0,
+      "central_rms_dbfs": -91.47915082744008,
+      "central_100ms_p10_dbfs": -90.30899869919436,
+      "central_100ms_p90_dbfs": -90.30899869919436,
+      "central_zero_percent": 97.55659722222222,
+      "central_100ms_below_one_tenth_median": 0
+    }
+  ],
+  "notes": [
+    "The loudest 20-second window is an automatic candidate, not a confirmed playback interval.",
+    "Recorded level includes phone output, distances, orientations and room reflections."
+  ]
+}

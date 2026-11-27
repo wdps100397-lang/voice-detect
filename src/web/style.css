@@ -82,10 +82,10 @@ th { font-size: 12px; color: var(--muted); white-space: nowrap; }
 td { font-size: 13px; overflow-wrap: anywhere; }
 .align-right { text-align: right; }
 .speaker-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
-.microphones { table-layout: fixed; min-width: 380px; }
+.microphones { table-layout: fixed; min-width: 440px; }
 .microphones th:nth-child(1) { width: 9%; }
-.microphones th:nth-child(2) { width: 40%; }
-.microphones th:nth-child(5) { width: 19%; }
+.microphones th:nth-child(2) { width: 34%; }
+.microphones th:last-child { width: 19%; }
 .microphones td, .microphones th { padding-inline: 4px; }
 .microphones input, .microphones select { padding-inline: 4px; }
 .status { position: sticky; top: 8px; z-index: 2; min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; margin: 0 0 14px; border: 1px solid #b9d8c9; border-radius: 8px; background: #edf7f1; color: #164f3c; }

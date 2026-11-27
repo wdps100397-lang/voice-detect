@@ -2,7 +2,12 @@
   "microphone_count": 4,
   "enable_speaker_recognition": true,
   "enable_localization": true,
-  "devices": [],
+  "devices": [
+    36,
+    35,
+    33,
+    30
+  ],
   "sample_rate_hz": 48000,
   "array_config": "config/array.json",
   "database": "data/speakers.json",
@@ -10,8 +15,7 @@
   "speech_gap_seconds": 0.8,
   "vad_mode": 1,
   "update_seconds": 0.5,
-  "calibration_seconds": 8,
-  "calibration_distances_m": [1.0, 1.0, 1.0, 1.0],
+  "calibration_seconds": 15,
   "max_clock_age_seconds": 0,
   "threshold": 0.65,
   "margin": 0.08

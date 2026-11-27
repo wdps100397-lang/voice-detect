@@ -1,0 +1,13 @@
+{
+  "database": "C:\\Users\\王翊丞\\Desktop\\TMrobot\\voice_detect\\runs\\20261124_speaker_test\\speakers.json",
+  "margin": 0.08,
+  "status": "unknown",
+  "user_id": "",
+  "score": 0.5601470823254312,
+  "score_gap": 0.42549728838685125,
+  "threshold": 0.65,
+  "scores": {
+    "voice_test_02": 0.5601470823254312,
+    "voice_test_01": 0.13464979393857995
+  }
+}

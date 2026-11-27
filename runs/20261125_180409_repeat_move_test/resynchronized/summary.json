@@ -1,0 +1,20 @@
+{
+  "calibration_interval_seconds": [
+    8,
+    14
+  ],
+  "packet_samples": 256,
+  "window_seconds": 0.5,
+  "post_move_evaluation_interval_seconds": [
+    25,
+    44
+  ],
+  "accepted_windows": 11,
+  "total_windows": 38,
+  "azimuth_range_deg": [
+    68.4,
+    74.5
+  ],
+  "median_azimuth_deg": 69.0,
+  "note": "Clock calibration uses the earlier fixed calibration point. The later reported +90-degree position is used only for comparison, not to estimate corrections."
+}

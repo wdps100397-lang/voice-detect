@@ -1,0 +1,52 @@
+{
+  "user_ids": [
+    "voice_test_01",
+    "voice_test_02"
+  ],
+  "results": {
+    "query.wav": {
+      "status": "recognized",
+      "user_id": "voice_test_01",
+      "score": 0.8685622885326991,
+      "score_gap": 0.657707796992248,
+      "threshold": 0.65,
+      "scores": {
+        "voice_test_01": 0.8685622885326991,
+        "voice_test_02": 0.21085449154045116
+      }
+    },
+    "unknown_query.wav": {
+      "status": "unknown",
+      "user_id": "",
+      "score": 0.17633097440394094,
+      "score_gap": 0.06731306150731896,
+      "threshold": 0.65,
+      "scores": {
+        "voice_test_02": 0.17633097440394094,
+        "voice_test_01": 0.10901791289662198
+      }
+    },
+    "speaker_02_enroll_1.wav": {
+      "status": "recognized",
+      "user_id": "voice_test_02",
+      "score": 0.9567972798300707,
+      "score_gap": 0.7242853576389193,
+      "threshold": 0.65,
+      "scores": {
+        "voice_test_02": 0.9567972798300707,
+        "voice_test_01": 0.23251192219115135
+      }
+    },
+    "speaker_02_enroll_2.wav": {
+      "status": "recognized",
+      "user_id": "voice_test_02",
+      "score": 0.9567972544545607,
+      "score_gap": 0.7972057460447506,
+      "threshold": 0.65,
+      "scores": {
+        "voice_test_02": 0.9567972544545607,
+        "voice_test_01": 0.15959150840981012
+      }
+    }
+  }
+}

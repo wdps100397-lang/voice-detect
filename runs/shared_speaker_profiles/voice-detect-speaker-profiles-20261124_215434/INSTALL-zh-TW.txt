@@ -1,0 +1,17 @@
+﻿voice-detect 聲紋資料庫安裝說明
+
+1. 先從 GitHub 下載最新版 voice-detect，解壓縮專案後，雙擊 setup.cmd 安裝。
+   https://github.com/wdps100397-lang/voice-detect
+
+2. 將這個 ZIP 裡的 data/speakers.json 放到專案根目錄的 data 資料夾。
+   正確位置是 voice-detect/data/speakers.json。data 資料夾不存在時可自行建立。
+   專案根目錄是放有 setup.cmd 和 open_test_ui.cmd 的那一層。
+
+3. 如果同學已經有自己的 data/speakers.json，請將這份另存為
+   data/speakers_shared.json，保留現有檔案。
+
+4. 雙擊 open_test_ui.cmd，在「聲紋辨識」分頁的「聲紋資料庫」欄位填
+   data/speakers.json（另存時填 data/speakers_shared.json），再按「載入名單」。
+   名單載入後，可以用新錄音測試辨識。
+
+這份 ZIP 只有聲紋資料庫和說明。請以私人方式傳給同學。

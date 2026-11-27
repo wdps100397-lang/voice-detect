@@ -1,0 +1,17 @@
+{
+  "devices": [
+    36,
+    35,
+    33,
+    30
+  ],
+  "sample_rate_hz": 48000,
+  "started_at_unix": 1795600119.2384036,
+  "calibrated_at_seconds": null,
+  "durations_seconds": [
+    27.818666666666665,
+    27.82,
+    27.82,
+    27.82
+  ]
+}

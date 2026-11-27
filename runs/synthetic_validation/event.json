@@ -1,0 +1,19 @@
+{
+  "interval_seconds": [
+    7.0,
+    9.0
+  ],
+  "direction": {
+    "status": "ok",
+    "angle_degrees": 0,
+    "best_candidate_degrees": 0,
+    "peak_margin": 0.6667805496571297,
+    "windows": 20
+  },
+  "identity": {
+    "status": "unusable_audio",
+    "speaker": null,
+    "reason": "Need at least 2 seconds of detected speech"
+  },
+  "identity_track": "A"
+}

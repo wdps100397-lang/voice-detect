@@ -1,0 +1,60 @@
+{
+  "utterance_id": "native-smoke-001",
+  "interval_seconds": [
+    7.0,
+    9.0
+  ],
+  "speaker_identity": {
+    "user_id": "",
+    "location": "",
+    "azimuth_deg": 0,
+    "timestamp": 1000.0,
+    "source": "voice_detect"
+  },
+  "agent_input": {
+    "utterance_id": "native-smoke-001",
+    "text": "測試對接格式",
+    "user_id": ""
+  },
+  "diagnostics": {
+    "direction": {
+      "status": "ok",
+      "azimuth_deg": 0,
+      "best_candidate_azimuth_deg": 0,
+      "peak_margin": 0.6667805496571297,
+      "windows": 20
+    },
+    "recognition": {
+      "status": "unusable_audio",
+      "user_id": "",
+      "reason": "Need at least 2 seconds of detected speech"
+    },
+    "identity_track": "A",
+    "capture": null,
+    "source": {
+      "track_sha256": [
+        "b09942d60b5370ac4de29497acd8a191a0aab103be91edd16a2712582f589c63",
+        "c8f307d478e67cba37b2d86b057385a188b4e19311d14e230e2d3104903b6eda",
+        "3556504ff34cc249a505dc94ba820ba431e81abb98adfa134aaf738446f33617"
+      ],
+      "sample_rate_hz": 48000
+    },
+    "observed_at": 1000.0,
+    "identity_age_seconds": 1795434820.702897
+  },
+  "integration": {
+    "identity_topic": "/project_a/speaker/identity",
+    "input_topic": "/project_a/agent/input",
+    "message_type": "std_msgs/msg/String",
+    "qos": {
+      "reliability": "reliable",
+      "durability": "volatile",
+      "depth": 10
+    },
+    "reference_commit": "41003af729f6e755796cf1092086e33bc72b0b4e",
+    "identity_receiver_compatible": false,
+    "identity_receiver_reason": "Current receiver accepts source=mock only; voice_detect requires receiver support.",
+    "identity_pairing": "Latest observation within 3 seconds; no audio segment alignment.",
+    "user_id_mode": "agent/input user_id applies when use_speaker_identity=false; true overrides it from identity cache."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "fingerprints": [
+    "b09942d60b5370ac4de29497acd8a191a0aab103be91edd16a2712582f589c63",
+    "c8f307d478e67cba37b2d86b057385a188b4e19311d14e230e2d3104903b6eda",
+    "3556504ff34cc249a505dc94ba820ba431e81abb98adfa134aaf738446f33617"
+  ],
+  "sample_rate": 48000,
+  "interval": [
+    1.0,
+    7.0
+  ],
+  "channels": [
+    {
+      "offset_seconds": 0.0,
+      "drift": 0.0
+    },
+    {
+      "offset_seconds": 0.013000295928030302,
+      "drift": 5.004734848484813e-05,
+      "residual_p95_seconds": 1.0771780303035425e-06
+    },
+    {
+      "offset_seconds": -0.007999704817397738,
+      "drift": -3.4990530303029796e-05,
+      "residual_p95_seconds": 1.1363636363637478e-06
+    }
+  ]
+}

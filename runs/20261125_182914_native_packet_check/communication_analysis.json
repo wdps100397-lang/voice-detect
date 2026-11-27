@@ -1,0 +1,2254 @@
+{
+  "folder": "runs\\20261125_182914_native_packet_check",
+  "duration_seconds": 39.96,
+  "channels": [
+    {
+      "label": "A",
+      "index": 36,
+      "mode": "exclusive",
+      "matched_windows": 54,
+      "total_windows": 78,
+      "relative_playback_clock_ppm": -2062.5000000009663,
+      "native_position_gaps": 0,
+      "native_nonstartup_flags": 0,
+      "detected_acoustic_phase_slips": [
+        {
+          "interval": [
+            21.7,
+            22.2
+          ],
+          "seconds": 0.005343749999997982,
+          "samples_48k": 256.49999999990314
+        },
+        {
+          "interval": [
+            24.2,
+            24.7
+          ],
+          "seconds": 0.005343749999997982,
+          "samples_48k": 256.49999999990314
+        },
+        {
+          "interval": [
+            29.7,
+            30.7
+          ],
+          "seconds": 0.005250000000001975,
+          "samples_48k": 252.00000000009481
+        },
+        {
+          "interval": [
+            32.2,
+            32.7
+          ],
+          "seconds": 0.005093750000000341,
+          "samples_48k": 244.50000000001637
+        }
+      ],
+      "windows": [
+        {
+          "time": 0.7,
+          "source_time": 18.5024375,
+          "score": 0.15207002838967246,
+          "known_noise": false
+        },
+        {
+          "time": 1.2,
+          "source_time": 11.61325,
+          "score": 0.2053269987380679,
+          "known_noise": true
+        },
+        {
+          "time": 1.7,
+          "source_time": 12.112,
+          "score": 0.20222945804504006,
+          "known_noise": true
+        },
+        {
+          "time": 2.2,
+          "source_time": 12.611,
+          "score": 0.1950482435799058,
+          "known_noise": true
+        },
+        {
+          "time": 2.7,
+          "source_time": 13.110125,
+          "score": 0.2396425273295535,
+          "known_noise": true
+        },
+        {
+          "time": 3.2,
+          "source_time": 13.608875,
+          "score": 0.22717915842238628,
+          "known_noise": true
+        },
+        {
+          "time": 3.7,
+          "source_time": 14.108,
+          "score": 0.2280816632717494,
+          "known_noise": true
+        },
+        {
+          "time": 4.2,
+          "source_time": 14.60675,
+          "score": 0.16660658072541132,
+          "known_noise": false
+        },
+        {
+          "time": 4.7,
+          "source_time": 15.10575,
+          "score": 0.21718593762648467,
+          "known_noise": true
+        },
+        {
+          "time": 5.2,
+          "source_time": 15.6046875,
+          "score": 0.17318013134784327,
+          "known_noise": false
+        },
+        {
+          "time": 5.7,
+          "source_time": 16.103625,
+          "score": 0.19564015367370113,
+          "known_noise": true
+        },
+        {
+          "time": 6.2,
+          "source_time": 16.602625,
+          "score": 0.16921957304017954,
+          "known_noise": false
+        },
+        {
+          "time": 6.7,
+          "source_time": 17.10175,
+          "score": 0.16667031007015498,
+          "known_noise": false
+        },
+        {
+          "time": 7.2,
+          "source_time": 17.6005625,
+          "score": 0.17116708867280858,
+          "known_noise": false
+        },
+        {
+          "time": 7.7,
+          "source_time": 18.0994375,
+          "score": 0.19355465137312688,
+          "known_noise": true
+        },
+        {
+          "time": 8.2,
+          "source_time": 18.5984375,
+          "score": 0.17387967711748156,
+          "known_noise": false
+        },
+        {
+          "time": 8.7,
+          "source_time": 19.097375,
+          "score": 0.15974294228821778,
+          "known_noise": false
+        },
+        {
+          "time": 9.2,
+          "source_time": 19.5965,
+          "score": 0.2100061813639662,
+          "known_noise": true
+        },
+        {
+          "time": 9.7,
+          "source_time": 20.0953125,
+          "score": 0.15802412501222934,
+          "known_noise": false
+        },
+        {
+          "time": 10.2,
+          "source_time": 20.59425,
+          "score": 0.2109754623067302,
+          "known_noise": true
+        },
+        {
+          "time": 10.7,
+          "source_time": 21.0931875,
+          "score": 0.26283444992020055,
+          "known_noise": true
+        },
+        {
+          "time": 11.2,
+          "source_time": 21.592375,
+          "score": 0.19283616942751725,
+          "known_noise": true
+        },
+        {
+          "time": 11.7,
+          "source_time": 22.091125,
+          "score": 0.23214122616623542,
+          "known_noise": true
+        },
+        {
+          "time": 12.2,
+          "source_time": 22.5900625,
+          "score": 0.19965766326523254,
+          "known_noise": true
+        },
+        {
+          "time": 12.7,
+          "source_time": 23.0890625,
+          "score": 0.24054482952831582,
+          "known_noise": true
+        },
+        {
+          "time": 13.2,
+          "source_time": 23.588,
+          "score": 0.21059695865276712,
+          "known_noise": true
+        },
+        {
+          "time": 13.7,
+          "source_time": 24.087,
+          "score": 0.18971567694767572,
+          "known_noise": true
+        },
+        {
+          "time": 14.2,
+          "source_time": 24.9798125,
+          "score": 0.2950699227568739,
+          "known_noise": true
+        },
+        {
+          "time": 14.7,
+          "source_time": 11.1710625,
+          "score": 0.20237632796391922,
+          "known_noise": true
+        },
+        {
+          "time": 15.2,
+          "source_time": 11.6700625,
+          "score": 0.2435259352051001,
+          "known_noise": true
+        },
+        {
+          "time": 15.7,
+          "source_time": 12.1688125,
+          "score": 0.18704845684636498,
+          "known_noise": true
+        },
+        {
+          "time": 16.2,
+          "source_time": 12.66775,
+          "score": 0.16692811994548545,
+          "known_noise": false
+        },
+        {
+          "time": 16.7,
+          "source_time": 13.1669375,
+          "score": 0.17714853466272956,
+          "known_noise": false
+        },
+        {
+          "time": 17.2,
+          "source_time": 13.6711875,
+          "score": 0.1974653661500513,
+          "known_noise": true
+        },
+        {
+          "time": 17.7,
+          "source_time": 14.1701875,
+          "score": 0.17860498495466157,
+          "known_noise": false
+        },
+        {
+          "time": 18.2,
+          "source_time": 14.669125,
+          "score": 0.22621721006776807,
+          "known_noise": true
+        },
+        {
+          "time": 18.7,
+          "source_time": 15.1679375,
+          "score": 0.1871323174767645,
+          "known_noise": true
+        },
+        {
+          "time": 19.2,
+          "source_time": 15.666875,
+          "score": 0.26006924944040694,
+          "known_noise": true
+        },
+        {
+          "time": 19.7,
+          "source_time": 16.1711875,
+          "score": 0.17624096624830682,
+          "known_noise": false
+        },
+        {
+          "time": 20.2,
+          "source_time": 16.6703125,
+          "score": 0.17430347186775944,
+          "known_noise": false
+        },
+        {
+          "time": 20.7,
+          "source_time": 17.1690625,
+          "score": 0.1951280029523599,
+          "known_noise": true
+        },
+        {
+          "time": 21.2,
+          "source_time": 17.6680625,
+          "score": 0.19329044345752958,
+          "known_noise": true
+        },
+        {
+          "time": 21.7,
+          "source_time": 18.167,
+          "score": 0.23839054946200033,
+          "known_noise": true
+        },
+        {
+          "time": 22.2,
+          "source_time": 18.6713125,
+          "score": 0.1972213765132612,
+          "known_noise": true
+        },
+        {
+          "time": 22.7,
+          "source_time": 19.17025,
+          "score": 0.2998623034310859,
+          "known_noise": true
+        },
+        {
+          "time": 23.2,
+          "source_time": 19.6691875,
+          "score": 0.17646275955165086,
+          "known_noise": false
+        },
+        {
+          "time": 23.7,
+          "source_time": 20.1681875,
+          "score": 0.21293775309516727,
+          "known_noise": true
+        },
+        {
+          "time": 24.2,
+          "source_time": 20.6673125,
+          "score": 0.2606998610829924,
+          "known_noise": true
+        },
+        {
+          "time": 24.7,
+          "source_time": 21.171625,
+          "score": 0.2556754865777084,
+          "known_noise": true
+        },
+        {
+          "time": 25.2,
+          "source_time": 21.6705625,
+          "score": 0.2146392479478657,
+          "known_noise": true
+        },
+        {
+          "time": 25.7,
+          "source_time": 22.169375,
+          "score": 0.16646453578746293,
+          "known_noise": false
+        },
+        {
+          "time": 26.2,
+          "source_time": 22.6685,
+          "score": 0.19090856837442613,
+          "known_noise": true
+        },
+        {
+          "time": 26.7,
+          "source_time": 23.16725,
+          "score": 0.19553477551728468,
+          "known_noise": true
+        },
+        {
+          "time": 27.2,
+          "source_time": 23.6663125,
+          "score": 0.20546285354894583,
+          "known_noise": true
+        },
+        {
+          "time": 27.7,
+          "source_time": 11.56225,
+          "score": 0.19637703592167616,
+          "known_noise": true
+        },
+        {
+          "time": 28.2,
+          "source_time": 12.06125,
+          "score": 0.21622879845274354,
+          "known_noise": true
+        },
+        {
+          "time": 28.7,
+          "source_time": 12.5601875,
+          "score": 0.1921128832287711,
+          "known_noise": true
+        },
+        {
+          "time": 29.2,
+          "source_time": 13.059375,
+          "score": 0.20099940537046876,
+          "known_noise": true
+        },
+        {
+          "time": 29.7,
+          "source_time": 13.558375,
+          "score": 0.2289277330813072,
+          "known_noise": true
+        },
+        {
+          "time": 30.2,
+          "source_time": 14.062625,
+          "score": 0.16967879224034854,
+          "known_noise": false
+        },
+        {
+          "time": 30.7,
+          "source_time": 14.5615625,
+          "score": 0.2000418983082017,
+          "known_noise": true
+        },
+        {
+          "time": 31.2,
+          "source_time": 15.060375,
+          "score": 0.191118180839462,
+          "known_noise": true
+        },
+        {
+          "time": 31.7,
+          "source_time": 15.5595,
+          "score": 0.17279346208424218,
+          "known_noise": false
+        },
+        {
+          "time": 32.2,
+          "source_time": 16.0585,
+          "score": 0.22879866581798566,
+          "known_noise": true
+        },
+        {
+          "time": 32.7,
+          "source_time": 16.5625625,
+          "score": 0.26910164220180427,
+          "known_noise": true
+        },
+        {
+          "time": 33.2,
+          "source_time": 17.0615625,
+          "score": 0.18784791292107506,
+          "known_noise": true
+        },
+        {
+          "time": 33.7,
+          "source_time": 17.5605,
+          "score": 0.21338267953581574,
+          "known_noise": true
+        },
+        {
+          "time": 34.2,
+          "source_time": 18.059625,
+          "score": 0.1774690256951653,
+          "known_noise": false
+        },
+        {
+          "time": 34.7,
+          "source_time": 18.5584375,
+          "score": 0.17821107061194916,
+          "known_noise": false
+        },
+        {
+          "time": 35.2,
+          "source_time": 19.062125,
+          "score": 0.16970640665647024,
+          "known_noise": false
+        },
+        {
+          "time": 35.7,
+          "source_time": 19.5616875,
+          "score": 0.26464562540996694,
+          "known_noise": true
+        },
+        {
+          "time": 36.2,
+          "source_time": 20.0608125,
+          "score": 0.19259717031362097,
+          "known_noise": true
+        },
+        {
+          "time": 36.7,
+          "source_time": 20.559625,
+          "score": 0.17161614295616173,
+          "known_noise": false
+        },
+        {
+          "time": 37.2,
+          "source_time": 21.0585625,
+          "score": 0.17697029249898868,
+          "known_noise": false
+        },
+        {
+          "time": 37.7,
+          "source_time": 21.5630625,
+          "score": 0.18990111377824548,
+          "known_noise": true
+        },
+        {
+          "time": 38.2,
+          "source_time": 22.062,
+          "score": 0.1714359113538958,
+          "known_noise": false
+        },
+        {
+          "time": 38.7,
+          "source_time": 22.5608125,
+          "score": 0.19488844262163232,
+          "known_noise": true
+        },
+        {
+          "time": 39.2,
+          "source_time": 23.05975,
+          "score": 0.20105555850120366,
+          "known_noise": true
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "index": 35,
+      "mode": "exclusive",
+      "matched_windows": 77,
+      "total_windows": 78,
+      "relative_playback_clock_ppm": -999.9999999976694,
+      "native_position_gaps": 0,
+      "native_nonstartup_flags": 0,
+      "detected_acoustic_phase_slips": [
+        {
+          "interval": [
+            36.2,
+            36.7
+          ],
+          "seconds": 0.004999999999999005,
+          "samples_48k": 239.99999999995225
+        }
+      ],
+      "windows": [
+        {
+          "time": 0.7,
+          "source_time": 11.1140625,
+          "score": 0.34302133669114415,
+          "known_noise": true
+        },
+        {
+          "time": 1.2,
+          "source_time": 11.6135625,
+          "score": 0.40155222694062487,
+          "known_noise": true
+        },
+        {
+          "time": 1.7,
+          "source_time": 12.1130625,
+          "score": 0.4042942661753513,
+          "known_noise": true
+        },
+        {
+          "time": 2.2,
+          "source_time": 12.61275,
+          "score": 0.37277507032458745,
+          "known_noise": true
+        },
+        {
+          "time": 2.7,
+          "source_time": 13.11225,
+          "score": 0.38933445802292216,
+          "known_noise": true
+        },
+        {
+          "time": 3.2,
+          "source_time": 13.61175,
+          "score": 0.38636097119780816,
+          "known_noise": true
+        },
+        {
+          "time": 3.7,
+          "source_time": 14.111125,
+          "score": 0.40315693644115586,
+          "known_noise": true
+        },
+        {
+          "time": 4.2,
+          "source_time": 14.610625,
+          "score": 0.4096187356203518,
+          "known_noise": true
+        },
+        {
+          "time": 4.7,
+          "source_time": 15.1103125,
+          "score": 0.4035059034814379,
+          "known_noise": true
+        },
+        {
+          "time": 5.2,
+          "source_time": 15.6096875,
+          "score": 0.32986200037799224,
+          "known_noise": true
+        },
+        {
+          "time": 5.7,
+          "source_time": 16.1091875,
+          "score": 0.38804233322785714,
+          "known_noise": true
+        },
+        {
+          "time": 6.2,
+          "source_time": 16.6086875,
+          "score": 0.3883314371826854,
+          "known_noise": true
+        },
+        {
+          "time": 6.7,
+          "source_time": 17.108375,
+          "score": 0.37440209099601124,
+          "known_noise": true
+        },
+        {
+          "time": 7.2,
+          "source_time": 17.60775,
+          "score": 0.35476316156490606,
+          "known_noise": true
+        },
+        {
+          "time": 7.7,
+          "source_time": 18.10725,
+          "score": 0.4007240584767418,
+          "known_noise": true
+        },
+        {
+          "time": 8.2,
+          "source_time": 18.60675,
+          "score": 0.4081296936534873,
+          "known_noise": true
+        },
+        {
+          "time": 8.7,
+          "source_time": 19.10625,
+          "score": 0.372511747411405,
+          "known_noise": true
+        },
+        {
+          "time": 9.2,
+          "source_time": 19.6058125,
+          "score": 0.36088083982124264,
+          "known_noise": true
+        },
+        {
+          "time": 9.7,
+          "source_time": 20.1053125,
+          "score": 0.4179055014788235,
+          "known_noise": true
+        },
+        {
+          "time": 10.2,
+          "source_time": 20.605,
+          "score": 0.37289417556345483,
+          "known_noise": true
+        },
+        {
+          "time": 10.7,
+          "source_time": 21.104375,
+          "score": 0.40424468243735484,
+          "known_noise": true
+        },
+        {
+          "time": 11.2,
+          "source_time": 21.603875,
+          "score": 0.4028995105605371,
+          "known_noise": true
+        },
+        {
+          "time": 11.7,
+          "source_time": 22.103375,
+          "score": 0.403242594377586,
+          "known_noise": true
+        },
+        {
+          "time": 12.2,
+          "source_time": 22.6029375,
+          "score": 0.40163897672647286,
+          "known_noise": true
+        },
+        {
+          "time": 12.7,
+          "source_time": 23.1024375,
+          "score": 0.40830055963212863,
+          "known_noise": true
+        },
+        {
+          "time": 13.2,
+          "source_time": 23.602125,
+          "score": 0.3749077460855852,
+          "known_noise": true
+        },
+        {
+          "time": 13.7,
+          "source_time": 24.1015,
+          "score": 0.4397081842681279,
+          "known_noise": true
+        },
+        {
+          "time": 14.2,
+          "source_time": 24.9799375,
+          "score": 0.1611841068671131,
+          "known_noise": false
+        },
+        {
+          "time": 14.7,
+          "source_time": 11.1865625,
+          "score": 0.3561485820208788,
+          "known_noise": true
+        },
+        {
+          "time": 15.2,
+          "source_time": 11.6860625,
+          "score": 0.3986191791141876,
+          "known_noise": true
+        },
+        {
+          "time": 15.7,
+          "source_time": 12.18575,
+          "score": 0.37024920018777274,
+          "known_noise": true
+        },
+        {
+          "time": 16.2,
+          "source_time": 12.685125,
+          "score": 0.40357392075869064,
+          "known_noise": true
+        },
+        {
+          "time": 16.7,
+          "source_time": 13.1848125,
+          "score": 0.41386350017895834,
+          "known_noise": true
+        },
+        {
+          "time": 17.2,
+          "source_time": 13.6841875,
+          "score": 0.40287808036808853,
+          "known_noise": true
+        },
+        {
+          "time": 17.7,
+          "source_time": 14.1836875,
+          "score": 0.40414275137678973,
+          "known_noise": true
+        },
+        {
+          "time": 18.2,
+          "source_time": 14.6831875,
+          "score": 0.4226761821737837,
+          "known_noise": true
+        },
+        {
+          "time": 18.7,
+          "source_time": 15.18275,
+          "score": 0.39726777984022255,
+          "known_noise": true
+        },
+        {
+          "time": 19.2,
+          "source_time": 15.68225,
+          "score": 0.4213597723486764,
+          "known_noise": true
+        },
+        {
+          "time": 19.7,
+          "source_time": 16.1819375,
+          "score": 0.40516044513073707,
+          "known_noise": true
+        },
+        {
+          "time": 20.2,
+          "source_time": 16.6813125,
+          "score": 0.39564923921081807,
+          "known_noise": true
+        },
+        {
+          "time": 20.7,
+          "source_time": 17.1808125,
+          "score": 0.3823239898897268,
+          "known_noise": true
+        },
+        {
+          "time": 21.2,
+          "source_time": 17.6805,
+          "score": 0.4058662313716708,
+          "known_noise": true
+        },
+        {
+          "time": 21.7,
+          "source_time": 18.179875,
+          "score": 0.42443719890392506,
+          "known_noise": true
+        },
+        {
+          "time": 22.2,
+          "source_time": 18.679375,
+          "score": 0.37606848531627646,
+          "known_noise": true
+        },
+        {
+          "time": 22.7,
+          "source_time": 19.1789375,
+          "score": 0.42408821914218986,
+          "known_noise": true
+        },
+        {
+          "time": 23.2,
+          "source_time": 19.6784375,
+          "score": 0.3783994592300565,
+          "known_noise": true
+        },
+        {
+          "time": 23.7,
+          "source_time": 20.178,
+          "score": 0.3849099523905571,
+          "known_noise": true
+        },
+        {
+          "time": 24.2,
+          "source_time": 20.6775,
+          "score": 0.4253805392143626,
+          "known_noise": true
+        },
+        {
+          "time": 24.7,
+          "source_time": 21.1771875,
+          "score": 0.4024228674908418,
+          "known_noise": true
+        },
+        {
+          "time": 25.2,
+          "source_time": 21.6765625,
+          "score": 0.3520759200076993,
+          "known_noise": true
+        },
+        {
+          "time": 25.7,
+          "source_time": 22.1760625,
+          "score": 0.39583484837815064,
+          "known_noise": true
+        },
+        {
+          "time": 26.2,
+          "source_time": 22.67575,
+          "score": 0.4569370325823457,
+          "known_noise": true
+        },
+        {
+          "time": 26.7,
+          "source_time": 23.17525,
+          "score": 0.35684701842129224,
+          "known_noise": true
+        },
+        {
+          "time": 27.2,
+          "source_time": 23.674625,
+          "score": 0.29497370098373926,
+          "known_noise": true
+        },
+        {
+          "time": 27.7,
+          "source_time": 11.5660625,
+          "score": 0.35942895246931167,
+          "known_noise": true
+        },
+        {
+          "time": 28.2,
+          "source_time": 12.0654375,
+          "score": 0.41055125837508805,
+          "known_noise": true
+        },
+        {
+          "time": 28.7,
+          "source_time": 12.5649375,
+          "score": 0.40683088508316706,
+          "known_noise": true
+        },
+        {
+          "time": 29.2,
+          "source_time": 13.064625,
+          "score": 0.38057130262137584,
+          "known_noise": true
+        },
+        {
+          "time": 29.7,
+          "source_time": 13.564,
+          "score": 0.35655298419449843,
+          "known_noise": true
+        },
+        {
+          "time": 30.2,
+          "source_time": 14.0635,
+          "score": 0.42545661220710346,
+          "known_noise": true
+        },
+        {
+          "time": 30.7,
+          "source_time": 14.5631875,
+          "score": 0.4079294404442661,
+          "known_noise": true
+        },
+        {
+          "time": 31.2,
+          "source_time": 15.0625625,
+          "score": 0.4074695271793152,
+          "known_noise": true
+        },
+        {
+          "time": 31.7,
+          "source_time": 15.5620625,
+          "score": 0.3945026608487123,
+          "known_noise": true
+        },
+        {
+          "time": 32.2,
+          "source_time": 16.06175,
+          "score": 0.3885463285105361,
+          "known_noise": true
+        },
+        {
+          "time": 32.7,
+          "source_time": 16.561125,
+          "score": 0.3956058434344079,
+          "known_noise": true
+        },
+        {
+          "time": 33.2,
+          "source_time": 17.0608125,
+          "score": 0.37634945023319305,
+          "known_noise": true
+        },
+        {
+          "time": 33.7,
+          "source_time": 17.5601875,
+          "score": 0.41790157842839293,
+          "known_noise": true
+        },
+        {
+          "time": 34.2,
+          "source_time": 18.0596875,
+          "score": 0.4200897154103279,
+          "known_noise": true
+        },
+        {
+          "time": 34.7,
+          "source_time": 18.559375,
+          "score": 0.3683076769421996,
+          "known_noise": true
+        },
+        {
+          "time": 35.2,
+          "source_time": 19.05875,
+          "score": 0.36003146686312243,
+          "known_noise": true
+        },
+        {
+          "time": 35.7,
+          "source_time": 19.55825,
+          "score": 0.4010942910461241,
+          "known_noise": true
+        },
+        {
+          "time": 36.2,
+          "source_time": 20.058125,
+          "score": 0.29033391540586917,
+          "known_noise": true
+        },
+        {
+          "time": 36.7,
+          "source_time": 20.562625,
+          "score": 0.363539853341421,
+          "known_noise": true
+        },
+        {
+          "time": 37.2,
+          "source_time": 21.0621875,
+          "score": 0.37658539361402366,
+          "known_noise": true
+        },
+        {
+          "time": 37.7,
+          "source_time": 21.5616875,
+          "score": 0.4279926197219511,
+          "known_noise": true
+        },
+        {
+          "time": 38.2,
+          "source_time": 22.06125,
+          "score": 0.36453282261963643,
+          "known_noise": true
+        },
+        {
+          "time": 38.7,
+          "source_time": 22.56075,
+          "score": 0.3927225099348536,
+          "known_noise": true
+        },
+        {
+          "time": 39.2,
+          "source_time": 23.0604375,
+          "score": 0.3578362502650128,
+          "known_noise": true
+        }
+      ]
+    },
+    {
+      "label": "C",
+      "index": 33,
+      "mode": "exclusive",
+      "matched_windows": 77,
+      "total_windows": 78,
+      "relative_playback_clock_ppm": -1500.0000000000568,
+      "native_position_gaps": 0,
+      "native_nonstartup_flags": 0,
+      "detected_acoustic_phase_slips": [
+        {
+          "interval": [
+            22.2,
+            22.7
+          ],
+          "seconds": 0.005312499999998721,
+          "samples_48k": 254.9999999999386
+        },
+        {
+          "interval": [
+            25.7,
+            26.2
+          ],
+          "seconds": 0.005312500000002274,
+          "samples_48k": 255.00000000010914
+        },
+        {
+          "interval": [
+            28.7,
+            29.2
+          ],
+          "seconds": 0.005312500000000497,
+          "samples_48k": 255.00000000002387
+        },
+        {
+          "interval": [
+            32.2,
+            32.7
+          ],
+          "seconds": 0.005500000000001393,
+          "samples_48k": 264.00000000006685
+        },
+        {
+          "interval": [
+            35.7,
+            36.2
+          ],
+          "seconds": 0.00506250000000108,
+          "samples_48k": 243.00000000005184
+        },
+        {
+          "interval": [
+            38.7,
+            39.2
+          ],
+          "seconds": 0.00506250000000108,
+          "samples_48k": 243.00000000005184
+        }
+      ],
+      "windows": [
+        {
+          "time": 0.7,
+          "source_time": 11.1123125,
+          "score": 0.25343356071037615,
+          "known_noise": true
+        },
+        {
+          "time": 1.2,
+          "source_time": 11.61125,
+          "score": 0.25196052127788154,
+          "known_noise": true
+        },
+        {
+          "time": 1.7,
+          "source_time": 12.1106875,
+          "score": 0.32583363137710447,
+          "known_noise": true
+        },
+        {
+          "time": 2.2,
+          "source_time": 12.609875,
+          "score": 0.2766219397534493,
+          "known_noise": true
+        },
+        {
+          "time": 2.7,
+          "source_time": 13.109125,
+          "score": 0.28118232404253185,
+          "known_noise": true
+        },
+        {
+          "time": 3.2,
+          "source_time": 13.6083125,
+          "score": 0.29581738825861265,
+          "known_noise": true
+        },
+        {
+          "time": 3.7,
+          "source_time": 14.1073125,
+          "score": 0.23721106354514127,
+          "known_noise": true
+        },
+        {
+          "time": 4.2,
+          "source_time": 14.6066875,
+          "score": 0.2851165475823509,
+          "known_noise": true
+        },
+        {
+          "time": 4.7,
+          "source_time": 15.1059375,
+          "score": 0.2996866611095615,
+          "known_noise": true
+        },
+        {
+          "time": 5.2,
+          "source_time": 15.605125,
+          "score": 0.3111768183166989,
+          "known_noise": true
+        },
+        {
+          "time": 5.7,
+          "source_time": 16.104125,
+          "score": 0.2933424593312921,
+          "known_noise": true
+        },
+        {
+          "time": 6.2,
+          "source_time": 16.6035625,
+          "score": 0.27946812027947415,
+          "known_noise": true
+        },
+        {
+          "time": 6.7,
+          "source_time": 17.1025625,
+          "score": 0.2431165908452465,
+          "known_noise": true
+        },
+        {
+          "time": 7.2,
+          "source_time": 17.602,
+          "score": 0.2541037057457298,
+          "known_noise": true
+        },
+        {
+          "time": 7.7,
+          "source_time": 18.1011875,
+          "score": 0.2940294169560665,
+          "known_noise": true
+        },
+        {
+          "time": 8.2,
+          "source_time": 18.600375,
+          "score": 0.30225325861525065,
+          "known_noise": true
+        },
+        {
+          "time": 8.7,
+          "source_time": 19.099625,
+          "score": 0.253378188380273,
+          "known_noise": true
+        },
+        {
+          "time": 9.2,
+          "source_time": 19.5988125,
+          "score": 0.27113765125567535,
+          "known_noise": true
+        },
+        {
+          "time": 9.7,
+          "source_time": 20.098,
+          "score": 0.3071551269776265,
+          "known_noise": true
+        },
+        {
+          "time": 10.2,
+          "source_time": 20.59725,
+          "score": 0.2941897492462927,
+          "known_noise": true
+        },
+        {
+          "time": 10.7,
+          "source_time": 21.096625,
+          "score": 0.2961473242252896,
+          "known_noise": true
+        },
+        {
+          "time": 11.2,
+          "source_time": 21.5956875,
+          "score": 0.29132851799243537,
+          "known_noise": true
+        },
+        {
+          "time": 11.7,
+          "source_time": 22.094875,
+          "score": 0.3344610531790996,
+          "known_noise": true
+        },
+        {
+          "time": 12.2,
+          "source_time": 22.593875,
+          "score": 0.2707077811153125,
+          "known_noise": true
+        },
+        {
+          "time": 12.7,
+          "source_time": 23.0933125,
+          "score": 0.29274071542282615,
+          "known_noise": true
+        },
+        {
+          "time": 13.2,
+          "source_time": 23.5925,
+          "score": 0.28974015323048913,
+          "known_noise": true
+        },
+        {
+          "time": 13.7,
+          "source_time": 24.09175,
+          "score": 0.31374152552088486,
+          "known_noise": true
+        },
+        {
+          "time": 14.2,
+          "source_time": 24.962875,
+          "score": 0.17761754570953517,
+          "known_noise": false
+        },
+        {
+          "time": 14.7,
+          "source_time": 11.176125,
+          "score": 0.27720681227297417,
+          "known_noise": true
+        },
+        {
+          "time": 15.2,
+          "source_time": 11.675375,
+          "score": 0.32098485166402624,
+          "known_noise": true
+        },
+        {
+          "time": 15.7,
+          "source_time": 12.1745625,
+          "score": 0.24386528119547946,
+          "known_noise": true
+        },
+        {
+          "time": 16.2,
+          "source_time": 12.6738125,
+          "score": 0.3140598202171489,
+          "known_noise": true
+        },
+        {
+          "time": 16.7,
+          "source_time": 13.173,
+          "score": 0.35290215755045845,
+          "known_noise": true
+        },
+        {
+          "time": 17.2,
+          "source_time": 13.6721875,
+          "score": 0.28626871067038673,
+          "known_noise": true
+        },
+        {
+          "time": 17.7,
+          "source_time": 14.1714375,
+          "score": 0.30589357569569586,
+          "known_noise": true
+        },
+        {
+          "time": 18.2,
+          "source_time": 14.670625,
+          "score": 0.3210237017509372,
+          "known_noise": true
+        },
+        {
+          "time": 18.7,
+          "source_time": 15.169875,
+          "score": 0.30370721936175576,
+          "known_noise": true
+        },
+        {
+          "time": 19.2,
+          "source_time": 15.669125,
+          "score": 0.3004251101412075,
+          "known_noise": true
+        },
+        {
+          "time": 19.7,
+          "source_time": 16.1683125,
+          "score": 0.3021805432352886,
+          "known_noise": true
+        },
+        {
+          "time": 20.2,
+          "source_time": 16.6675,
+          "score": 0.29016212775812605,
+          "known_noise": true
+        },
+        {
+          "time": 20.7,
+          "source_time": 17.16675,
+          "score": 0.31740178635987354,
+          "known_noise": true
+        },
+        {
+          "time": 21.2,
+          "source_time": 17.6659375,
+          "score": 0.29155031651974217,
+          "known_noise": true
+        },
+        {
+          "time": 21.7,
+          "source_time": 18.165375,
+          "score": 0.29436717993143113,
+          "known_noise": true
+        },
+        {
+          "time": 22.2,
+          "source_time": 18.664375,
+          "score": 0.34295192431559635,
+          "known_noise": true
+        },
+        {
+          "time": 22.7,
+          "source_time": 19.1689375,
+          "score": 0.2857597869046611,
+          "known_noise": true
+        },
+        {
+          "time": 23.2,
+          "source_time": 19.668125,
+          "score": 0.29615984490926245,
+          "known_noise": true
+        },
+        {
+          "time": 23.7,
+          "source_time": 20.167375,
+          "score": 0.30171838293401093,
+          "known_noise": true
+        },
+        {
+          "time": 24.2,
+          "source_time": 20.666375,
+          "score": 0.3005600408629061,
+          "known_noise": true
+        },
+        {
+          "time": 24.7,
+          "source_time": 21.165625,
+          "score": 0.3248112887654442,
+          "known_noise": true
+        },
+        {
+          "time": 25.2,
+          "source_time": 21.665,
+          "score": 0.2812702408869722,
+          "known_noise": true
+        },
+        {
+          "time": 25.7,
+          "source_time": 22.16425,
+          "score": 0.33400342554850265,
+          "known_noise": true
+        },
+        {
+          "time": 26.2,
+          "source_time": 22.6688125,
+          "score": 0.2735053465402297,
+          "known_noise": true
+        },
+        {
+          "time": 26.7,
+          "source_time": 23.168,
+          "score": 0.2713066697002096,
+          "known_noise": true
+        },
+        {
+          "time": 27.2,
+          "source_time": 23.66725,
+          "score": 0.28310681322750175,
+          "known_noise": true
+        },
+        {
+          "time": 27.7,
+          "source_time": 11.5581875,
+          "score": 0.30003216658928245,
+          "known_noise": true
+        },
+        {
+          "time": 28.2,
+          "source_time": 12.0574375,
+          "score": 0.3257141225396189,
+          "known_noise": true
+        },
+        {
+          "time": 28.7,
+          "source_time": 12.556625,
+          "score": 0.301440625513599,
+          "known_noise": true
+        },
+        {
+          "time": 29.2,
+          "source_time": 13.0611875,
+          "score": 0.30542466183780376,
+          "known_noise": true
+        },
+        {
+          "time": 29.7,
+          "source_time": 13.5601875,
+          "score": 0.27996611521401854,
+          "known_noise": true
+        },
+        {
+          "time": 30.2,
+          "source_time": 14.059625,
+          "score": 0.28716065285065845,
+          "known_noise": true
+        },
+        {
+          "time": 30.7,
+          "source_time": 14.5588125,
+          "score": 0.2730969144250176,
+          "known_noise": true
+        },
+        {
+          "time": 31.2,
+          "source_time": 15.0580625,
+          "score": 0.2578432684659536,
+          "known_noise": true
+        },
+        {
+          "time": 31.7,
+          "source_time": 15.55725,
+          "score": 0.35612878521925,
+          "known_noise": true
+        },
+        {
+          "time": 32.2,
+          "source_time": 16.05625,
+          "score": 0.29027225436412807,
+          "known_noise": true
+        },
+        {
+          "time": 32.7,
+          "source_time": 16.561,
+          "score": 0.3102011251147302,
+          "known_noise": true
+        },
+        {
+          "time": 33.2,
+          "source_time": 17.06025,
+          "score": 0.292977289051716,
+          "known_noise": true
+        },
+        {
+          "time": 33.7,
+          "source_time": 17.5594375,
+          "score": 0.31850489399330234,
+          "known_noise": true
+        },
+        {
+          "time": 34.2,
+          "source_time": 18.0586875,
+          "score": 0.3084471353417459,
+          "known_noise": true
+        },
+        {
+          "time": 34.7,
+          "source_time": 18.5576875,
+          "score": 0.2801105553902118,
+          "known_noise": true
+        },
+        {
+          "time": 35.2,
+          "source_time": 19.057125,
+          "score": 0.29502668359055356,
+          "known_noise": true
+        },
+        {
+          "time": 35.7,
+          "source_time": 19.556375,
+          "score": 0.25045749936681205,
+          "known_noise": true
+        },
+        {
+          "time": 36.2,
+          "source_time": 20.0606875,
+          "score": 0.21815289772243646,
+          "known_noise": true
+        },
+        {
+          "time": 36.7,
+          "source_time": 20.5600625,
+          "score": 0.285504336800144,
+          "known_noise": true
+        },
+        {
+          "time": 37.2,
+          "source_time": 21.05925,
+          "score": 0.3205970254893591,
+          "known_noise": true
+        },
+        {
+          "time": 37.7,
+          "source_time": 21.5585,
+          "score": 0.2976407375231257,
+          "known_noise": true
+        },
+        {
+          "time": 38.2,
+          "source_time": 22.0575,
+          "score": 0.25302878235922,
+          "known_noise": true
+        },
+        {
+          "time": 38.7,
+          "source_time": 22.5569375,
+          "score": 0.277063294413876,
+          "known_noise": true
+        },
+        {
+          "time": 39.2,
+          "source_time": 23.06125,
+          "score": 0.24702301029493692,
+          "known_noise": true
+        }
+      ]
+    },
+    {
+      "label": "D",
+      "index": 30,
+      "mode": "exclusive",
+      "matched_windows": 78,
+      "total_windows": 78,
+      "relative_playback_clock_ppm": -1375.0000000012365,
+      "native_position_gaps": 0,
+      "native_nonstartup_flags": 0,
+      "detected_acoustic_phase_slips": [
+        {
+          "interval": [
+            24.7,
+            25.2
+          ],
+          "seconds": 0.005124999999998714,
+          "samples_48k": 245.99999999993827
+        },
+        {
+          "interval": [
+            28.7,
+            29.2
+          ],
+          "seconds": 0.0053125000000013856,
+          "samples_48k": 255.0000000000665
+        },
+        {
+          "interval": [
+            32.2,
+            32.7
+          ],
+          "seconds": 0.0053125000000013856,
+          "samples_48k": 255.0000000000665
+        },
+        {
+          "interval": [
+            36.2,
+            36.7
+          ],
+          "seconds": 0.0053125000000013856,
+          "samples_48k": 255.0000000000665
+        }
+      ],
+      "windows": [
+        {
+          "time": 0.7,
+          "source_time": 11.113375,
+          "score": 0.29755721095340937,
+          "known_noise": true
+        },
+        {
+          "time": 1.2,
+          "source_time": 11.612625,
+          "score": 0.35796270000382685,
+          "known_noise": true
+        },
+        {
+          "time": 1.7,
+          "source_time": 12.11175,
+          "score": 0.3011417159938482,
+          "known_noise": true
+        },
+        {
+          "time": 2.2,
+          "source_time": 12.6110625,
+          "score": 0.27998209268715474,
+          "known_noise": true
+        },
+        {
+          "time": 2.7,
+          "source_time": 13.1105,
+          "score": 0.33367919074644603,
+          "known_noise": true
+        },
+        {
+          "time": 3.2,
+          "source_time": 13.609625,
+          "score": 0.33078331016901436,
+          "known_noise": true
+        },
+        {
+          "time": 3.7,
+          "source_time": 14.1090625,
+          "score": 0.36333126089885126,
+          "known_noise": true
+        },
+        {
+          "time": 4.2,
+          "source_time": 14.6081875,
+          "score": 0.25982799877861357,
+          "known_noise": true
+        },
+        {
+          "time": 4.7,
+          "source_time": 15.107625,
+          "score": 0.33084415765726843,
+          "known_noise": true
+        },
+        {
+          "time": 5.2,
+          "source_time": 15.60675,
+          "score": 0.2769055245461653,
+          "known_noise": true
+        },
+        {
+          "time": 5.7,
+          "source_time": 16.1061875,
+          "score": 0.27854497511780113,
+          "known_noise": true
+        },
+        {
+          "time": 6.2,
+          "source_time": 16.6055,
+          "score": 0.3231623964406887,
+          "known_noise": true
+        },
+        {
+          "time": 6.7,
+          "source_time": 17.104625,
+          "score": 0.26322669996177506,
+          "known_noise": true
+        },
+        {
+          "time": 7.2,
+          "source_time": 17.6040625,
+          "score": 0.26001861688936373,
+          "known_noise": true
+        },
+        {
+          "time": 7.7,
+          "source_time": 18.1031875,
+          "score": 0.3468732840426175,
+          "known_noise": true
+        },
+        {
+          "time": 8.2,
+          "source_time": 18.602625,
+          "score": 0.29418678451015906,
+          "known_noise": true
+        },
+        {
+          "time": 8.7,
+          "source_time": 19.10175,
+          "score": 0.24754697168867976,
+          "known_noise": true
+        },
+        {
+          "time": 9.2,
+          "source_time": 19.6011875,
+          "score": 0.30155631105053415,
+          "known_noise": true
+        },
+        {
+          "time": 9.7,
+          "source_time": 20.1005,
+          "score": 0.32605292646587053,
+          "known_noise": true
+        },
+        {
+          "time": 10.2,
+          "source_time": 20.599625,
+          "score": 0.3094230158329951,
+          "known_noise": true
+        },
+        {
+          "time": 10.7,
+          "source_time": 21.0989375,
+          "score": 0.35506883851971444,
+          "known_noise": true
+        },
+        {
+          "time": 11.2,
+          "source_time": 21.598375,
+          "score": 0.2998733260798675,
+          "known_noise": true
+        },
+        {
+          "time": 11.7,
+          "source_time": 22.0975,
+          "score": 0.31913695623883936,
+          "known_noise": true
+        },
+        {
+          "time": 12.2,
+          "source_time": 22.5968125,
+          "score": 0.3168401746755627,
+          "known_noise": true
+        },
+        {
+          "time": 12.7,
+          "source_time": 23.09625,
+          "score": 0.33063483457350634,
+          "known_noise": true
+        },
+        {
+          "time": 13.2,
+          "source_time": 23.595375,
+          "score": 0.32488384161812744,
+          "known_noise": true
+        },
+        {
+          "time": 13.7,
+          "source_time": 24.0946875,
+          "score": 0.3164627764903974,
+          "known_noise": true
+        },
+        {
+          "time": 14.2,
+          "source_time": 24.97925,
+          "score": 0.18488152384092418,
+          "known_noise": true
+        },
+        {
+          "time": 14.7,
+          "source_time": 11.17925,
+          "score": 0.2916199582697522,
+          "known_noise": true
+        },
+        {
+          "time": 15.2,
+          "source_time": 11.6786875,
+          "score": 0.3249837512794537,
+          "known_noise": true
+        },
+        {
+          "time": 15.7,
+          "source_time": 12.178,
+          "score": 0.255906812322823,
+          "known_noise": true
+        },
+        {
+          "time": 16.2,
+          "source_time": 12.677125,
+          "score": 0.29503829035748036,
+          "known_noise": true
+        },
+        {
+          "time": 16.7,
+          "source_time": 13.1764375,
+          "score": 0.2983033165867992,
+          "known_noise": true
+        },
+        {
+          "time": 17.2,
+          "source_time": 13.675875,
+          "score": 0.33775027204597047,
+          "known_noise": true
+        },
+        {
+          "time": 17.7,
+          "source_time": 14.1751875,
+          "score": 0.3302416057327478,
+          "known_noise": true
+        },
+        {
+          "time": 18.2,
+          "source_time": 14.6745,
+          "score": 0.3051037119481361,
+          "known_noise": true
+        },
+        {
+          "time": 18.7,
+          "source_time": 15.173625,
+          "score": 0.3020961135802674,
+          "known_noise": true
+        },
+        {
+          "time": 19.2,
+          "source_time": 15.672875,
+          "score": 0.31538937445701165,
+          "known_noise": true
+        },
+        {
+          "time": 19.7,
+          "source_time": 16.1721875,
+          "score": 0.2964410183969671,
+          "known_noise": true
+        },
+        {
+          "time": 20.2,
+          "source_time": 16.6715,
+          "score": 0.28290263673511135,
+          "known_noise": true
+        },
+        {
+          "time": 20.7,
+          "source_time": 17.17075,
+          "score": 0.23720014012137144,
+          "known_noise": true
+        },
+        {
+          "time": 21.2,
+          "source_time": 17.67025,
+          "score": 0.30228626900444544,
+          "known_noise": true
+        },
+        {
+          "time": 21.7,
+          "source_time": 18.169375,
+          "score": 0.33055689508604796,
+          "known_noise": true
+        },
+        {
+          "time": 22.2,
+          "source_time": 18.668875,
+          "score": 0.3198121892568736,
+          "known_noise": true
+        },
+        {
+          "time": 22.7,
+          "source_time": 19.168,
+          "score": 0.31282233192891956,
+          "known_noise": true
+        },
+        {
+          "time": 23.2,
+          "source_time": 19.6674375,
+          "score": 0.31756742266924104,
+          "known_noise": true
+        },
+        {
+          "time": 23.7,
+          "source_time": 20.16675,
+          "score": 0.3355650474162049,
+          "known_noise": true
+        },
+        {
+          "time": 24.2,
+          "source_time": 20.665875,
+          "score": 0.3715381869440203,
+          "known_noise": true
+        },
+        {
+          "time": 24.7,
+          "source_time": 21.165375,
+          "score": 0.2986199026724072,
+          "known_noise": true
+        },
+        {
+          "time": 25.2,
+          "source_time": 21.6698125,
+          "score": 0.3247246965522822,
+          "known_noise": true
+        },
+        {
+          "time": 25.7,
+          "source_time": 22.16925,
+          "score": 0.287375526678196,
+          "known_noise": true
+        },
+        {
+          "time": 26.2,
+          "source_time": 22.6685625,
+          "score": 0.3674427167941559,
+          "known_noise": true
+        },
+        {
+          "time": 26.7,
+          "source_time": 23.1676875,
+          "score": 0.3320415953609061,
+          "known_noise": true
+        },
+        {
+          "time": 27.2,
+          "source_time": 23.6671875,
+          "score": 0.3099995938226883,
+          "known_noise": true
+        },
+        {
+          "time": 27.7,
+          "source_time": 11.5580625,
+          "score": 0.3027213230687265,
+          "known_noise": true
+        },
+        {
+          "time": 28.2,
+          "source_time": 12.0573125,
+          "score": 0.30882194153090675,
+          "known_noise": true
+        },
+        {
+          "time": 28.7,
+          "source_time": 12.5568125,
+          "score": 0.3165541836669492,
+          "known_noise": true
+        },
+        {
+          "time": 29.2,
+          "source_time": 13.0614375,
+          "score": 0.3315091310456174,
+          "known_noise": true
+        },
+        {
+          "time": 29.7,
+          "source_time": 13.5605625,
+          "score": 0.29850754636069654,
+          "known_noise": true
+        },
+        {
+          "time": 30.2,
+          "source_time": 14.06,
+          "score": 0.34106837117192557,
+          "known_noise": true
+        },
+        {
+          "time": 30.7,
+          "source_time": 14.5593125,
+          "score": 0.32293937165253617,
+          "known_noise": true
+        },
+        {
+          "time": 31.2,
+          "source_time": 15.058625,
+          "score": 0.27568488817239084,
+          "known_noise": true
+        },
+        {
+          "time": 31.7,
+          "source_time": 15.5579375,
+          "score": 0.31409019675552885,
+          "known_noise": true
+        },
+        {
+          "time": 32.2,
+          "source_time": 16.0570625,
+          "score": 0.3226578419712507,
+          "known_noise": true
+        },
+        {
+          "time": 32.7,
+          "source_time": 16.5616875,
+          "score": 0.34256063159084366,
+          "known_noise": true
+        },
+        {
+          "time": 33.2,
+          "source_time": 17.061,
+          "score": 0.29536865666794626,
+          "known_noise": true
+        },
+        {
+          "time": 33.7,
+          "source_time": 17.5603125,
+          "score": 0.28553932038227514,
+          "known_noise": true
+        },
+        {
+          "time": 34.2,
+          "source_time": 18.05975,
+          "score": 0.3249830238279226,
+          "known_noise": true
+        },
+        {
+          "time": 34.7,
+          "source_time": 18.5590625,
+          "score": 0.3072708284870808,
+          "known_noise": true
+        },
+        {
+          "time": 35.2,
+          "source_time": 19.058375,
+          "score": 0.342626409083005,
+          "known_noise": true
+        },
+        {
+          "time": 35.7,
+          "source_time": 19.5575,
+          "score": 0.36265320075547747,
+          "known_noise": true
+        },
+        {
+          "time": 36.2,
+          "source_time": 20.0568125,
+          "score": 0.2545862130211936,
+          "known_noise": true
+        },
+        {
+          "time": 36.7,
+          "source_time": 20.5614375,
+          "score": 0.2830505798695168,
+          "known_noise": true
+        },
+        {
+          "time": 37.2,
+          "source_time": 21.06075,
+          "score": 0.2925871671540142,
+          "known_noise": true
+        },
+        {
+          "time": 37.7,
+          "source_time": 21.5601875,
+          "score": 0.30049587431007907,
+          "known_noise": true
+        },
+        {
+          "time": 38.2,
+          "source_time": 22.0595,
+          "score": 0.3152014425722704,
+          "known_noise": true
+        },
+        {
+          "time": 38.7,
+          "source_time": 22.558625,
+          "score": 0.292041353252732,
+          "known_noise": true
+        },
+        {
+          "time": 39.2,
+          "source_time": 23.0579375,
+          "score": 0.2714518695127277,
+          "known_noise": true
+        }
+      ]
+    }
+  ],
+  "clock": {
+    "schema": 1,
+    "sample_rate": 48000,
+    "interval": [
+      9,
+      15
+    ],
+    "channels": [
+      {
+        "offset_seconds": 0.0,
+        "drift": 0.0
+      },
+      {
+        "offset_seconds": 0.00043678885305071586,
+        "drift": -0.0011276332450531642,
+        "residual_p95_seconds": 1.4036489409038724e-05
+      },
+      {
+        "offset_seconds": 0.0012354682769067944,
+        "drift": -0.0005070155770873365,
+        "residual_p95_seconds": 1.4768456379834165e-05
+      },
+      {
+        "offset_seconds": 0.0008161584075727536,
+        "drift": -0.0006665273239084816,
+        "residual_p95_seconds": 8.069837711355262e-06
+      }
+    ]
+  },
+  "holdouts": [
+    {
+      "time": 16.0,
+      "residual_samples": [
+        -0.609234009026547,
+        0.43981711417565017,
+        0.42858288758380186
+      ],
+      "status": "ok",
+      "azimuth_deg": -25.5,
+      "elevation_deg": null,
+      "absolute_elevation_deg": 40.9,
+      "best_candidate_azimuth_deg": -25.5,
+      "peak_margin": 0.43876687153947197,
+      "windows": 5
+    },
+    {
+      "time": 18.0,
+      "residual_samples": [
+        256.39355751607735,
+        255.36331251456,
+        256.1652059827981
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 20.0,
+      "residual_samples": [
+        512.7713490411812,
+        511.66180791494423,
+        511.7768290780122
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 22.0,
+      "residual_samples": [
+        768.7741405662847,
+        767.8353033153285,
+        767.2634521732265
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 24.0,
+      "residual_samples": [
+        768.7769320913886,
+        510.6337987157129,
+        766.7500752684406
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 26.0,
+      "residual_samples": [
+        1025.5297236164924,
+        509.5572941160971,
+        766.236698363655
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 28.0,
+      "residual_samples": [
+        1282.2825151415961,
+        766.3557895164814,
+        1021.7233214588691
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 30.0,
+      "residual_samples": [
+        1539.4103066666999,
+        765.5292849168657,
+        1021.3349445540834
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 32.0,
+      "residual_samples": [
+        1541.1630981918036,
+        765.82778031725,
+        1020.9465676492977
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 34.0,
+      "residual_samples": [
+        1797.0408897169073,
+        765.5012757176341,
+        1019.8081907445119
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 36.0,
+      "residual_samples": [
+        2053.168681242011,
+        765.5497711180187,
+        1274.1698138397262
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    },
+    {
+      "time": 38.0,
+      "residual_samples": [
+        2052.421472767115,
+        1021.223266518403,
+        1273.4064369349403
+      ],
+      "status": "error",
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "absolute_elevation_deg": null,
+      "windows": 5,
+      "reason": "錄音的時間差超出麥克風間距允許的範圍，可能有時間跳變或強反射。請重新錄音。"
+    }
+  ]
+}

@@ -1,0 +1,1640 @@
+[
+  {
+    "status": "ok",
+    "azimuth_deg": -25.9,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 41.1,
+    "best_candidate_azimuth_deg": -25.9,
+    "peak_margin": 0.4018692073290213,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 14.0,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.1,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.2,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.3,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.4,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      14.0,
+      14.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": -25.9,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 40.9,
+    "best_candidate_azimuth_deg": -25.9,
+    "peak_margin": 0.43198143917095705,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 14.5,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.6,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.7,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.8,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 14.9,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      14.5,
+      15.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": -25.9,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 40.3,
+    "best_candidate_azimuth_deg": -25.9,
+    "peak_margin": 0.4803510143315441,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 15.0,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.1,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.2,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.3,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.4,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      15.0,
+      15.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": -26.2,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 41.0,
+    "best_candidate_azimuth_deg": -26.2,
+    "peak_margin": 0.4189496224840383,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 15.5,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.6,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.7,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.8,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 15.9,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      15.5,
+      16.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": -25.9,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 40.3,
+    "best_candidate_azimuth_deg": -25.9,
+    "peak_margin": 0.481127910763557,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 16.0,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.1,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.2,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.3,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.4,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      16.0,
+      16.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": -25.8,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 40.0,
+    "best_candidate_azimuth_deg": -25.8,
+    "peak_margin": 0.44489108087512086,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 16.5,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.6,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.7,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.8,
+          "shifts_samples": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 16.9,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      16.5,
+      17.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": -25.0,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 38.8,
+    "best_candidate_azimuth_deg": -25.0,
+    "peak_margin": 0.4356051127588239,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 17.0,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.1,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.2,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.3,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 17.4,
+          "shifts_samples": [
+            0,
+            256,
+            256,
+            256
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      17.0,
+      17.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（2/5），請重新校準。",
+    "interval_seconds": [
+      17.5,
+      18.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      18.0,
+      18.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      18.5,
+      19.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      19.0,
+      19.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      19.5,
+      20.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      20.0,
+      20.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      20.5,
+      21.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（1/5），請重新校準。",
+    "interval_seconds": [
+      21.0,
+      21.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      21.5,
+      22.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      22.0,
+      22.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      22.5,
+      23.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      23.0,
+      23.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（1/5），請重新校準。",
+    "interval_seconds": [
+      23.5,
+      24.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（1/5），請重新校準。",
+    "interval_seconds": [
+      24.0,
+      24.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      24.5,
+      25.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（3/5），請重新校準。",
+    "interval_seconds": [
+      25.0,
+      25.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（2/5），請重新校準。",
+    "interval_seconds": [
+      25.5,
+      26.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      26.0,
+      26.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      26.5,
+      27.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      27.0,
+      27.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      27.5,
+      28.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      28.0,
+      28.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      28.5,
+      29.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      29.0,
+      29.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      29.5,
+      30.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      30.0,
+      30.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      30.5,
+      31.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      31.0,
+      31.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      31.5,
+      32.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      32.0,
+      32.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      32.5,
+      33.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      33.0,
+      33.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      33.5,
+      34.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      34.0,
+      34.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      34.5,
+      35.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      35.0,
+      35.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      35.5,
+      36.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      36.0,
+      36.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      36.5,
+      37.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      37.0,
+      37.5
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（0/5），請重新校準。",
+    "interval_seconds": [
+      37.5,
+      38.0
+    ]
+  },
+  {
+    "status": "error",
+    "azimuth_deg": null,
+    "reason": "同步補償後仍有過多片段無法驗證（3/5），請重新校準。",
+    "interval_seconds": [
+      38.0,
+      38.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 74.5,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 24.7,
+    "best_candidate_azimuth_deg": 74.5,
+    "peak_margin": 0.5489668693848484,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 38.5,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.6,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.7,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.8,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 38.9,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      38.5,
+      39.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 74.1,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 25.2,
+    "best_candidate_azimuth_deg": 74.1,
+    "peak_margin": 0.5627784104676623,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 39.0,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 39.1,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 39.2,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 39.3,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1024
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 39.4,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1024
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      39.0,
+      39.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 69.9,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 7.6,
+    "best_candidate_azimuth_deg": 69.9,
+    "peak_margin": 0.6017365304478409,
+    "windows": 4,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 4,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 39.5,
+          "shifts_samples": [
+            0,
+            2048,
+            768,
+            1024
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 39.6,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": false
+        },
+        {
+          "start_seconds": 39.7,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 39.8,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 39.9,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      39.5,
+      40.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 69.6,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 9.4,
+    "best_candidate_azimuth_deg": 69.6,
+    "peak_margin": 0.5777999722067072,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 40.0,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.1,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.2,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.3,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.4,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      40.0,
+      40.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 69.3,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 13.1,
+    "best_candidate_azimuth_deg": 69.3,
+    "peak_margin": 0.5768252267453892,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 40.5,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.6,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.7,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.8,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 40.9,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      40.5,
+      41.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 68.9,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 14.2,
+    "best_candidate_azimuth_deg": 68.9,
+    "peak_margin": 0.6314159342591884,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 41.0,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.1,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.2,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.3,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.4,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      41.0,
+      41.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 68.8,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 16.7,
+    "best_candidate_azimuth_deg": 68.8,
+    "peak_margin": 0.5870878017012388,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 41.5,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.6,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.7,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.8,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 41.9,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      41.5,
+      42.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 68.8,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 18.1,
+    "best_candidate_azimuth_deg": 68.8,
+    "peak_margin": 0.5889615120802418,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 42.0,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 42.1,
+          "shifts_samples": [
+            0,
+            2048,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 42.2,
+          "shifts_samples": [
+            0,
+            2304,
+            1280,
+            1536
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 42.3,
+          "shifts_samples": [
+            0,
+            2304,
+            1280,
+            1536
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 42.4,
+          "shifts_samples": [
+            0,
+            2304,
+            1280,
+            1536
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      42.0,
+      42.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 69.0,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 19.7,
+    "best_candidate_azimuth_deg": 69.0,
+    "peak_margin": 0.5873182627300747,
+    "windows": 4,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 4,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 42.5,
+          "shifts_samples": [
+            0,
+            2304,
+            1280,
+            1536
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 42.6,
+          "shifts_samples": [
+            0,
+            2304,
+            1280,
+            1536
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 42.7,
+          "shifts_samples": [
+            0,
+            2304,
+            1280,
+            1536
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 42.8,
+          "shifts_samples": [
+            0,
+            2304,
+            1280,
+            1536
+          ],
+          "usable": false
+        },
+        {
+          "start_seconds": 42.9,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1536
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      42.5,
+      43.0
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 68.7,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 21.4,
+    "best_candidate_azimuth_deg": 68.7,
+    "peak_margin": 0.589173531422996,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 43.0,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.1,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.2,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.3,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.4,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      43.0,
+      43.5
+    ]
+  },
+  {
+    "status": "ok",
+    "azimuth_deg": 68.4,
+    "elevation_deg": null,
+    "absolute_elevation_deg": 22.8,
+    "best_candidate_azimuth_deg": 68.4,
+    "peak_margin": 0.583884437024906,
+    "windows": 5,
+    "synchronization": {
+      "packet_samples": 256,
+      "valid_frames": 5,
+      "total_frames": 5,
+      "corrections": [
+        {
+          "start_seconds": 43.5,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.6,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.7,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.8,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        },
+        {
+          "start_seconds": 43.9,
+          "shifts_samples": [
+            0,
+            2304,
+            1024,
+            1280
+          ],
+          "usable": true
+        }
+      ]
+    },
+    "interval_seconds": [
+      43.5,
+      44.0
+    ]
+  }
+]

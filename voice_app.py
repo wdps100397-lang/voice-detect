@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import sys
 
-from src.common import ROOT, save_json
+from src.common import ROOT, read_json, save_json
 
 
 def main():
@@ -24,14 +24,20 @@ def main():
                        help="Use WASAPI exclusive capture (default)")
     modes.add_argument("--shared", dest="exclusive", action="store_false",
                        help="Use shared capture for comparison")
+    modes.add_argument("--raw-shared", dest="capture_mode", action="store_const", const="shared_raw",
+                       help="Use native WASAPI shared RAW with packet timing and MMCSS capture threads")
+    capture.add_argument("--capture-latency", type=float,
+                         help="Capture buffer duration in seconds (0.02 to 0.5)")
     capture.set_defaults(exclusive=True)
     calibrate = sub.add_parser("calibrate", help="Calibrate clock offsets using a stationary broadband sound")
     calibrate.add_argument("--files", nargs="+", required=True)
     calibrate.add_argument("--start", type=float, required=True)
     calibrate.add_argument("--end", type=float, required=True)
-    calibrate.add_argument("--distances", type=float, nargs="+", required=True, help="One source distance per microphone")
+    calibrate.add_argument("--config", type=Path, default=ROOT / "config" / "array.json",
+                           help="Array JSON with measured microphone and calibration-speaker coordinates")
+    calibrate.add_argument("--distances", type=float, nargs="+", help="Override with one source distance per microphone")
     calibrate.add_argument("--output", type=Path, required=True)
-    locate = sub.add_parser("locate", help="Estimate horizontal direction from a calibrated recording")
+    locate = sub.add_parser("locate", help="Estimate azimuth and elevation from a calibrated recording")
     locate.add_argument("--files", nargs="+", required=True)
     locate.add_argument("--calibration", type=Path, required=True)
     locate.add_argument("--config", type=Path, default=ROOT / "config" / "array.json")
@@ -100,14 +106,18 @@ def main():
             raise ValueError("Select one to four distinct inputs")
         if min(args.devices) < 0 or not 5 <= args.seconds <= 60:
             raise ValueError("Use nonnegative device indices and 5 to 60 seconds")
-        return record(args.devices, args.seconds, args.exclusive)
+        return record(args.devices, args.seconds, args.exclusive,
+                      capture_mode=args.capture_mode, latency_seconds=args.capture_latency)
     if args.command == "calibrate":
-        from src.localization import calibration
-        result = calibration(args.files, args.start, args.end, args.distances, args.output)
+        from src.localization import calibration, calibration_distances, measured_positions
+        distances = args.distances
+        if distances is None:
+            geometry = read_json(args.config)
+            distances = calibration_distances(geometry, measured_positions(geometry, len(args.files)))
+        result = calibration(args.files, args.start, args.end, distances, args.output)
     elif args.command in ("locate", "analyze"):
         if args.command == "analyze":
             from src.events import analyze_event
-            from src.common import read_json
             result = analyze_event(args.files, args.config, args.calibration, args.start, args.end,
                                    args.database, args.threshold, args.margin,
                                    utterance_id=args.utterance_id,

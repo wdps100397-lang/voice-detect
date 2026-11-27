@@ -1,0 +1,36 @@
+{
+  "geometry_measured": true,
+  "positions_m": [
+    [
+      0.1555,
+      0.11,
+      0.0
+    ],
+    [
+      -0.1555,
+      0.11,
+      0.0
+    ],
+    [
+      -0.1555,
+      -0.11,
+      0.0
+    ],
+    [
+      0.1555,
+      -0.11,
+      0.0
+    ]
+  ],
+  "calibration_source_m": [
+    0.155,
+    0.31,
+    0.0
+  ],
+  "max_extrapolation_seconds": 30,
+  "_measurement_notes": {
+    "positions_m": "本次獨立測試使用陣列相對座標，X 朝右、Y 朝前、Z 朝上。依 A、B、C、D 填收音孔的 [X, Y, Z]，單位公尺。",
+    "calibration_source_m": "手機出聲孔的 [X, Y, Z]，與麥克風使用同一原點和軸向，單位公尺。",
+    "geometry_measured": "使用中的收音孔與校準聲源座標填妥後設為 true。"
+  }
+}
